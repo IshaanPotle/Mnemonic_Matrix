@@ -1,0 +1,38 @@
+{
+  "items": [
+    {
+      "key": "HALBWACHS1925",
+      "title": "The Social Frameworks of Memory",
+      "creators": [{"firstName": "Maurice", "lastName": "Halbwachs"}],
+      "date": "1925",
+      "itemType": "book",
+      "publisher": "University of Chicago Press",
+      "abstract": "Foundational work on collective memory theory...",
+      "tags": [],
+      "collections": ["Memory Studies Core"]
+    },
+    {
+      "key": "NORA1989", 
+      "title": "Between Memory and History: Les Lieux de Mémoire",
+      "creators": [{"firstName": "Pierre", "lastName": "Nora"}],
+      "date": "1989",
+      "itemType": "journalArticle",
+      "publicationTitle": "Representations",
+      "abstract": "Introduces concept of sites of memory...",
+      "tags": [],
+      "citations": ["HALBWACHS1925", "DURKHEIM1893"]
+    },
+    {
+      "key": "TEST2024",
+      "title": "Cultural Memory in Sociology",
+      "creators": [{"firstName": "Test", "lastName": "Author"}],
+      "date": "2024",
+      "itemType": "journalArticle",
+      "publicationTitle": "Memory Journal",
+      "abstract": "This paper explores cultural memory and its impact on society.",
+      "tags": ["DSOC"],
+      "collections": ["Memory Studies"],
+      "citations": []
+    }
+  ]
+} 

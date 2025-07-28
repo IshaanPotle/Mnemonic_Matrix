@@ -1,0 +1,2532 @@
+{
+  "items": [
+    {
+      "key": "PAPER1",
+      "title": "Dummy Paper Title 1",
+      "creators": [
+        {
+          "firstName": "Author1",
+          "lastName": "Last1"
+        }
+      ],
+      "date": "1861",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 8",
+      "abstract": "This is a dummy abstract for paper 1 about digital_memory.",
+      "tags": [
+        "MENET",
+        "MEARC",
+        "MCSO",
+        "cosmopolitan_memory"
+      ],
+      "collections": [
+        "Collection 1"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER2",
+      "title": "Dummy Paper Title 2",
+      "creators": [
+        {
+          "firstName": "Author2",
+          "lastName": "Last2"
+        }
+      ],
+      "date": "1873",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 3",
+      "abstract": "This is a dummy abstract for paper 2 about trauma.",
+      "tags": [
+        "DLAW",
+        "MEINT"
+      ],
+      "collections": [
+        "Collection 1"
+      ],
+      "citations": [
+        "PAPER1"
+      ]
+    },
+    {
+      "key": "PAPER3",
+      "title": "Dummy Paper Title 3",
+      "creators": [
+        {
+          "firstName": "Author3",
+          "lastName": "Last3"
+        }
+      ],
+      "date": "2018",
+      "itemType": "book",
+      "publisher": "Publisher 3",
+      "abstract": "This is a dummy abstract for paper 3 about digital_memory.",
+      "tags": [
+        "MCED",
+        "MENET"
+      ],
+      "collections": [
+        "Collection 4"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER4",
+      "title": "Dummy Paper Title 4",
+      "creators": [
+        {
+          "firstName": "Author4",
+          "lastName": "Last4"
+        }
+      ],
+      "date": "1970",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 5",
+      "abstract": "This is a dummy abstract for paper 4 about post_memory.",
+      "tags": [
+        "digital_memory",
+        "cultural_memory",
+        "collective_memory",
+        "MESUR"
+      ],
+      "collections": [
+        "Collection 7"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER5",
+      "title": "Dummy Paper Title 5",
+      "creators": [
+        {
+          "firstName": "Author5",
+          "lastName": "Last5"
+        }
+      ],
+      "date": "1853",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 10",
+      "abstract": "This is a dummy abstract for paper 5 about cosmopolitan_memory.",
+      "tags": [
+        "MCED",
+        "trauma",
+        "MENET"
+      ],
+      "collections": [
+        "Collection 10"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER6",
+      "title": "Dummy Paper Title 6",
+      "creators": [
+        {
+          "firstName": "Author6",
+          "lastName": "Last6"
+        }
+      ],
+      "date": "1870",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 13",
+      "abstract": "This is a dummy abstract for paper 6 about post_memory.",
+      "tags": [
+        "MESUR"
+      ],
+      "collections": [
+        "Collection 1"
+      ],
+      "citations": [
+        "PAPER4",
+        "PAPER1",
+        "PAPER2",
+        "PAPER3"
+      ]
+    },
+    {
+      "key": "PAPER7",
+      "title": "Dummy Paper Title 7",
+      "creators": [
+        {
+          "firstName": "Author7",
+          "lastName": "Last7"
+        }
+      ],
+      "date": "1959",
+      "itemType": "book",
+      "publisher": "Publisher 9",
+      "abstract": "This is a dummy abstract for paper 7 about cultural_memory.",
+      "tags": [
+        "MCLI",
+        "MCSO",
+        "MESUR"
+      ],
+      "collections": [
+        "Collection 5"
+      ],
+      "citations": [
+        "PAPER3",
+        "PAPER5"
+      ]
+    },
+    {
+      "key": "PAPER8",
+      "title": "Dummy Paper Title 8",
+      "creators": [
+        {
+          "firstName": "Author8",
+          "lastName": "Last8"
+        }
+      ],
+      "date": "1905",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 17",
+      "abstract": "This is a dummy abstract for paper 8 about digital_memory.",
+      "tags": [
+        "DMU"
+      ],
+      "collections": [
+        "Collection 9"
+      ],
+      "citations": [
+        "PAPER1",
+        "PAPER5"
+      ]
+    },
+    {
+      "key": "PAPER9",
+      "title": "Dummy Paper Title 9",
+      "creators": [
+        {
+          "firstName": "Author9",
+          "lastName": "Last9"
+        }
+      ],
+      "date": "1968",
+      "itemType": "book",
+      "publisher": "Publisher 16",
+      "abstract": "This is a dummy abstract for paper 9 about cultural_memory.",
+      "tags": [
+        "DPSY"
+      ],
+      "collections": [
+        "Collection 8"
+      ],
+      "citations": [
+        "PAPER7",
+        "PAPER5",
+        "PAPER2",
+        "PAPER4"
+      ]
+    },
+    {
+      "key": "PAPER10",
+      "title": "Dummy Paper Title 10",
+      "creators": [
+        {
+          "firstName": "Author10",
+          "lastName": "Last10"
+        }
+      ],
+      "date": "1919",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 10",
+      "abstract": "This is a dummy abstract for paper 10 about post_memory.",
+      "tags": [
+        "trauma",
+        "cosmopolitan_memory",
+        "digital_memory",
+        "MCLA"
+      ],
+      "collections": [
+        "Collection 3"
+      ],
+      "citations": [
+        "PAPER9",
+        "PAPER2",
+        "PAPER1",
+        "PAPER5"
+      ]
+    },
+    {
+      "key": "PAPER11",
+      "title": "Dummy Paper Title 11",
+      "creators": [
+        {
+          "firstName": "Author11",
+          "lastName": "Last11"
+        }
+      ],
+      "date": "1951",
+      "itemType": "book",
+      "publisher": "Publisher 1",
+      "abstract": "This is a dummy abstract for paper 11 about post_memory.",
+      "tags": [
+        "MCFI",
+        "cosmopolitan_memory",
+        "MESUR"
+      ],
+      "collections": [
+        "Collection 3"
+      ],
+      "citations": [
+        "PAPER9",
+        "PAPER3"
+      ]
+    },
+    {
+      "key": "PAPER12",
+      "title": "Dummy Paper Title 12",
+      "creators": [
+        {
+          "firstName": "Author12",
+          "lastName": "Last12"
+        }
+      ],
+      "date": "2003",
+      "itemType": "book",
+      "publisher": "Publisher 20",
+      "abstract": "This is a dummy abstract for paper 12 about digital_memory.",
+      "tags": [
+        "MENET"
+      ],
+      "collections": [
+        "Collection 3"
+      ],
+      "citations": [
+        "PAPER4"
+      ]
+    },
+    {
+      "key": "PAPER13",
+      "title": "Dummy Paper Title 13",
+      "creators": [
+        {
+          "firstName": "Author13",
+          "lastName": "Last13"
+        }
+      ],
+      "date": "1882",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 15",
+      "abstract": "This is a dummy abstract for paper 13 about collective_memory.",
+      "tags": [
+        "cultural_memory",
+        "MCSO",
+        "DLAW"
+      ],
+      "collections": [
+        "Collection 10"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER14",
+      "title": "Dummy Paper Title 14",
+      "creators": [
+        {
+          "firstName": "Author14",
+          "lastName": "Last14"
+        }
+      ],
+      "date": "1984",
+      "itemType": "book",
+      "publisher": "Publisher 9",
+      "abstract": "This is a dummy abstract for paper 14 about trauma.",
+      "tags": [
+        "DCUL",
+        "MCFI",
+        "DLAW",
+        "cosmopolitan_memory"
+      ],
+      "collections": [
+        "Collection 3"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER15",
+      "title": "Dummy Paper Title 15",
+      "creators": [
+        {
+          "firstName": "Author15",
+          "lastName": "Last15"
+        }
+      ],
+      "date": "2002",
+      "itemType": "book",
+      "publisher": "Publisher 12",
+      "abstract": "This is a dummy abstract for paper 15 about trauma.",
+      "tags": [
+        "MCMO",
+        "trauma"
+      ],
+      "collections": [
+        "Collection 4"
+      ],
+      "citations": [
+        "PAPER2",
+        "PAPER6",
+        "PAPER12"
+      ]
+    },
+    {
+      "key": "PAPER16",
+      "title": "Dummy Paper Title 16",
+      "creators": [
+        {
+          "firstName": "Author16",
+          "lastName": "Last16"
+        }
+      ],
+      "date": "1856",
+      "itemType": "book",
+      "publisher": "Publisher 18",
+      "abstract": "This is a dummy abstract for paper 16 about cosmopolitan_memory.",
+      "tags": [
+        "DCUL",
+        "DLIT",
+        "digital_memory"
+      ],
+      "collections": [
+        "Collection 7"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER17",
+      "title": "Dummy Paper Title 17",
+      "creators": [
+        {
+          "firstName": "Author17",
+          "lastName": "Last17"
+        }
+      ],
+      "date": "1919",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 15",
+      "abstract": "This is a dummy abstract for paper 17 about cosmopolitan_memory.",
+      "tags": [
+        "cosmopolitan_memory"
+      ],
+      "collections": [
+        "Collection 8"
+      ],
+      "citations": [
+        "PAPER15",
+        "PAPER3",
+        "PAPER14"
+      ]
+    },
+    {
+      "key": "PAPER18",
+      "title": "Dummy Paper Title 18",
+      "creators": [
+        {
+          "firstName": "Author18",
+          "lastName": "Last18"
+        }
+      ],
+      "date": "1937",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 11",
+      "abstract": "This is a dummy abstract for paper 18 about trauma.",
+      "tags": [
+        "trauma",
+        "DCUL"
+      ],
+      "collections": [
+        "Collection 2"
+      ],
+      "citations": [
+        "PAPER7",
+        "PAPER3",
+        "PAPER16",
+        "PAPER17"
+      ]
+    },
+    {
+      "key": "PAPER19",
+      "title": "Dummy Paper Title 19",
+      "creators": [
+        {
+          "firstName": "Author19",
+          "lastName": "Last19"
+        }
+      ],
+      "date": "1942",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 14",
+      "abstract": "This is a dummy abstract for paper 19 about cosmopolitan_memory.",
+      "tags": [
+        "MCLI"
+      ],
+      "collections": [
+        "Collection 8"
+      ],
+      "citations": [
+        "PAPER11"
+      ]
+    },
+    {
+      "key": "PAPER20",
+      "title": "Dummy Paper Title 20",
+      "creators": [
+        {
+          "firstName": "Author20",
+          "lastName": "Last20"
+        }
+      ],
+      "date": "1895",
+      "itemType": "book",
+      "publisher": "Publisher 17",
+      "abstract": "This is a dummy abstract for paper 20 about trauma.",
+      "tags": [
+        "MEARC",
+        "cultural_memory",
+        "post_memory"
+      ],
+      "collections": [
+        "Collection 3"
+      ],
+      "citations": [
+        "PAPER19",
+        "PAPER18",
+        "PAPER17",
+        "PAPER13"
+      ]
+    },
+    {
+      "key": "PAPER21",
+      "title": "Dummy Paper Title 21",
+      "creators": [
+        {
+          "firstName": "Author21",
+          "lastName": "Last21"
+        }
+      ],
+      "date": "1900",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 3",
+      "abstract": "This is a dummy abstract for paper 21 about digital_memory.",
+      "tags": [
+        "MCLI",
+        "DLAW",
+        "collective_memory"
+      ],
+      "collections": [
+        "Collection 1"
+      ],
+      "citations": [
+        "PAPER7",
+        "PAPER8",
+        "PAPER11"
+      ]
+    },
+    {
+      "key": "PAPER22",
+      "title": "Dummy Paper Title 22",
+      "creators": [
+        {
+          "firstName": "Author22",
+          "lastName": "Last22"
+        }
+      ],
+      "date": "1929",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 2",
+      "abstract": "This is a dummy abstract for paper 22 about post_memory.",
+      "tags": [
+        "DHIS",
+        "MCLI",
+        "DSOC",
+        "DPSY"
+      ],
+      "collections": [
+        "Collection 9"
+      ],
+      "citations": [
+        "PAPER19",
+        "PAPER14",
+        "PAPER13"
+      ]
+    },
+    {
+      "key": "PAPER23",
+      "title": "Dummy Paper Title 23",
+      "creators": [
+        {
+          "firstName": "Author23",
+          "lastName": "Last23"
+        }
+      ],
+      "date": "2000",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 16",
+      "abstract": "This is a dummy abstract for paper 23 about trauma.",
+      "tags": [
+        "post_memory",
+        "DMU",
+        "collective_memory"
+      ],
+      "collections": [
+        "Collection 3"
+      ],
+      "citations": [
+        "PAPER3",
+        "PAPER21"
+      ]
+    },
+    {
+      "key": "PAPER24",
+      "title": "Dummy Paper Title 24",
+      "creators": [
+        {
+          "firstName": "Author24",
+          "lastName": "Last24"
+        }
+      ],
+      "date": "1962",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 16",
+      "abstract": "This is a dummy abstract for paper 24 about trauma.",
+      "tags": [
+        "DCUL",
+        "cosmopolitan_memory",
+        "MENET"
+      ],
+      "collections": [
+        "Collection 6"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER25",
+      "title": "Dummy Paper Title 25",
+      "creators": [
+        {
+          "firstName": "Author25",
+          "lastName": "Last25"
+        }
+      ],
+      "date": "2020",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 9",
+      "abstract": "This is a dummy abstract for paper 25 about cosmopolitan_memory.",
+      "tags": [
+        "MEINT"
+      ],
+      "collections": [
+        "Collection 5"
+      ],
+      "citations": [
+        "PAPER1",
+        "PAPER21",
+        "PAPER22"
+      ]
+    },
+    {
+      "key": "PAPER26",
+      "title": "Dummy Paper Title 26",
+      "creators": [
+        {
+          "firstName": "Author26",
+          "lastName": "Last26"
+        }
+      ],
+      "date": "1971",
+      "itemType": "book",
+      "publisher": "Publisher 2",
+      "abstract": "This is a dummy abstract for paper 26 about collective_memory.",
+      "tags": [
+        "MCSO",
+        "post_memory"
+      ],
+      "collections": [
+        "Collection 6"
+      ],
+      "citations": [
+        "PAPER25",
+        "PAPER3",
+        "PAPER10",
+        "PAPER11"
+      ]
+    },
+    {
+      "key": "PAPER27",
+      "title": "Dummy Paper Title 27",
+      "creators": [
+        {
+          "firstName": "Author27",
+          "lastName": "Last27"
+        }
+      ],
+      "date": "1907",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 1",
+      "abstract": "This is a dummy abstract for paper 27 about collective_memory.",
+      "tags": [
+        "MCSO"
+      ],
+      "collections": [
+        "Collection 7"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER28",
+      "title": "Dummy Paper Title 28",
+      "creators": [
+        {
+          "firstName": "Author28",
+          "lastName": "Last28"
+        }
+      ],
+      "date": "1899",
+      "itemType": "book",
+      "publisher": "Publisher 17",
+      "abstract": "This is a dummy abstract for paper 28 about post_memory.",
+      "tags": [
+        "post_memory",
+        "DPSY",
+        "MCMO"
+      ],
+      "collections": [
+        "Collection 1"
+      ],
+      "citations": [
+        "PAPER20",
+        "PAPER4",
+        "PAPER18",
+        "PAPER13",
+        "PAPER12"
+      ]
+    },
+    {
+      "key": "PAPER29",
+      "title": "Dummy Paper Title 29",
+      "creators": [
+        {
+          "firstName": "Author29",
+          "lastName": "Last29"
+        }
+      ],
+      "date": "2014",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 10",
+      "abstract": "This is a dummy abstract for paper 29 about cultural_memory.",
+      "tags": [
+        "MCED",
+        "trauma",
+        "MCLA",
+        "collective_memory"
+      ],
+      "collections": [
+        "Collection 3"
+      ],
+      "citations": [
+        "PAPER18",
+        "PAPER27",
+        "PAPER17",
+        "PAPER12",
+        "PAPER28"
+      ]
+    },
+    {
+      "key": "PAPER30",
+      "title": "Dummy Paper Title 30",
+      "creators": [
+        {
+          "firstName": "Author30",
+          "lastName": "Last30"
+        }
+      ],
+      "date": "1967",
+      "itemType": "book",
+      "publisher": "Publisher 15",
+      "abstract": "This is a dummy abstract for paper 30 about collective_memory.",
+      "tags": [
+        "DSOC",
+        "cosmopolitan_memory"
+      ],
+      "collections": [
+        "Collection 9"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER31",
+      "title": "Dummy Paper Title 31",
+      "creators": [
+        {
+          "firstName": "Author31",
+          "lastName": "Last31"
+        }
+      ],
+      "date": "1981",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 9",
+      "abstract": "This is a dummy abstract for paper 31 about post_memory.",
+      "tags": [
+        "digital_memory"
+      ],
+      "collections": [
+        "Collection 6"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER32",
+      "title": "Dummy Paper Title 32",
+      "creators": [
+        {
+          "firstName": "Author32",
+          "lastName": "Last32"
+        }
+      ],
+      "date": "1873",
+      "itemType": "book",
+      "publisher": "Publisher 10",
+      "abstract": "This is a dummy abstract for paper 32 about digital_memory.",
+      "tags": [
+        "DCUL",
+        "DPSY"
+      ],
+      "collections": [
+        "Collection 2"
+      ],
+      "citations": [
+        "PAPER16",
+        "PAPER10",
+        "PAPER19",
+        "PAPER28",
+        "PAPER5"
+      ]
+    },
+    {
+      "key": "PAPER33",
+      "title": "Dummy Paper Title 33",
+      "creators": [
+        {
+          "firstName": "Author33",
+          "lastName": "Last33"
+        }
+      ],
+      "date": "1852",
+      "itemType": "book",
+      "publisher": "Publisher 16",
+      "abstract": "This is a dummy abstract for paper 33 about cosmopolitan_memory.",
+      "tags": [
+        "MEINT",
+        "collective_memory",
+        "post_memory"
+      ],
+      "collections": [
+        "Collection 2"
+      ],
+      "citations": [
+        "PAPER4"
+      ]
+    },
+    {
+      "key": "PAPER34",
+      "title": "Dummy Paper Title 34",
+      "creators": [
+        {
+          "firstName": "Author34",
+          "lastName": "Last34"
+        }
+      ],
+      "date": "2014",
+      "itemType": "book",
+      "publisher": "Publisher 16",
+      "abstract": "This is a dummy abstract for paper 34 about cosmopolitan_memory.",
+      "tags": [
+        "MEETH",
+        "collective_memory",
+        "MEARC"
+      ],
+      "collections": [
+        "Collection 2"
+      ],
+      "citations": [
+        "PAPER19",
+        "PAPER17",
+        "PAPER6",
+        "PAPER32"
+      ]
+    },
+    {
+      "key": "PAPER35",
+      "title": "Dummy Paper Title 35",
+      "creators": [
+        {
+          "firstName": "Author35",
+          "lastName": "Last35"
+        }
+      ],
+      "date": "1980",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 11",
+      "abstract": "This is a dummy abstract for paper 35 about cultural_memory.",
+      "tags": [
+        "MCED",
+        "DLIT"
+      ],
+      "collections": [
+        "Collection 10"
+      ],
+      "citations": [
+        "PAPER23",
+        "PAPER34",
+        "PAPER22"
+      ]
+    },
+    {
+      "key": "PAPER36",
+      "title": "Dummy Paper Title 36",
+      "creators": [
+        {
+          "firstName": "Author36",
+          "lastName": "Last36"
+        }
+      ],
+      "date": "1981",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 1",
+      "abstract": "This is a dummy abstract for paper 36 about post_memory.",
+      "tags": [
+        "MCSO",
+        "DHIS",
+        "DCUL"
+      ],
+      "collections": [
+        "Collection 2"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER37",
+      "title": "Dummy Paper Title 37",
+      "creators": [
+        {
+          "firstName": "Author37",
+          "lastName": "Last37"
+        }
+      ],
+      "date": "1891",
+      "itemType": "book",
+      "publisher": "Publisher 14",
+      "abstract": "This is a dummy abstract for paper 37 about cosmopolitan_memory.",
+      "tags": [
+        "MESUR"
+      ],
+      "collections": [
+        "Collection 6"
+      ],
+      "citations": [
+        "PAPER26"
+      ]
+    },
+    {
+      "key": "PAPER38",
+      "title": "Dummy Paper Title 38",
+      "creators": [
+        {
+          "firstName": "Author38",
+          "lastName": "Last38"
+        }
+      ],
+      "date": "1891",
+      "itemType": "book",
+      "publisher": "Publisher 10",
+      "abstract": "This is a dummy abstract for paper 38 about cultural_memory.",
+      "tags": [
+        "trauma",
+        "DSOC",
+        "digital_memory"
+      ],
+      "collections": [
+        "Collection 8"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER39",
+      "title": "Dummy Paper Title 39",
+      "creators": [
+        {
+          "firstName": "Author39",
+          "lastName": "Last39"
+        }
+      ],
+      "date": "1969",
+      "itemType": "book",
+      "publisher": "Publisher 15",
+      "abstract": "This is a dummy abstract for paper 39 about cultural_memory.",
+      "tags": [
+        "MCMO",
+        "DLAW",
+        "MCED"
+      ],
+      "collections": [
+        "Collection 2"
+      ],
+      "citations": [
+        "PAPER35",
+        "PAPER13",
+        "PAPER36",
+        "PAPER23",
+        "PAPER15"
+      ]
+    },
+    {
+      "key": "PAPER40",
+      "title": "Dummy Paper Title 40",
+      "creators": [
+        {
+          "firstName": "Author40",
+          "lastName": "Last40"
+        }
+      ],
+      "date": "1857",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 8",
+      "abstract": "This is a dummy abstract for paper 40 about digital_memory.",
+      "tags": [
+        "DCUL",
+        "MEETH",
+        "DLAW"
+      ],
+      "collections": [
+        "Collection 6"
+      ],
+      "citations": [
+        "PAPER25",
+        "PAPER24",
+        "PAPER11"
+      ]
+    },
+    {
+      "key": "PAPER41",
+      "title": "Dummy Paper Title 41",
+      "creators": [
+        {
+          "firstName": "Author41",
+          "lastName": "Last41"
+        }
+      ],
+      "date": "1967",
+      "itemType": "book",
+      "publisher": "Publisher 12",
+      "abstract": "This is a dummy abstract for paper 41 about digital_memory.",
+      "tags": [
+        "cosmopolitan_memory",
+        "DHIS"
+      ],
+      "collections": [
+        "Collection 2"
+      ],
+      "citations": [
+        "PAPER4",
+        "PAPER27",
+        "PAPER33",
+        "PAPER40",
+        "PAPER26"
+      ]
+    },
+    {
+      "key": "PAPER42",
+      "title": "Dummy Paper Title 42",
+      "creators": [
+        {
+          "firstName": "Author42",
+          "lastName": "Last42"
+        }
+      ],
+      "date": "1910",
+      "itemType": "book",
+      "publisher": "Publisher 11",
+      "abstract": "This is a dummy abstract for paper 42 about trauma.",
+      "tags": [
+        "MCMO",
+        "digital_memory"
+      ],
+      "collections": [
+        "Collection 10"
+      ],
+      "citations": [
+        "PAPER1",
+        "PAPER22",
+        "PAPER37",
+        "PAPER2",
+        "PAPER32"
+      ]
+    },
+    {
+      "key": "PAPER43",
+      "title": "Dummy Paper Title 43",
+      "creators": [
+        {
+          "firstName": "Author43",
+          "lastName": "Last43"
+        }
+      ],
+      "date": "1979",
+      "itemType": "book",
+      "publisher": "Publisher 7",
+      "abstract": "This is a dummy abstract for paper 43 about post_memory.",
+      "tags": [
+        "MCSO",
+        "post_memory",
+        "MCLA"
+      ],
+      "collections": [
+        "Collection 9"
+      ],
+      "citations": [
+        "PAPER39",
+        "PAPER6"
+      ]
+    },
+    {
+      "key": "PAPER44",
+      "title": "Dummy Paper Title 44",
+      "creators": [
+        {
+          "firstName": "Author44",
+          "lastName": "Last44"
+        }
+      ],
+      "date": "1991",
+      "itemType": "book",
+      "publisher": "Publisher 18",
+      "abstract": "This is a dummy abstract for paper 44 about digital_memory.",
+      "tags": [
+        "trauma"
+      ],
+      "collections": [
+        "Collection 6"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER45",
+      "title": "Dummy Paper Title 45",
+      "creators": [
+        {
+          "firstName": "Author45",
+          "lastName": "Last45"
+        }
+      ],
+      "date": "1927",
+      "itemType": "book",
+      "publisher": "Publisher 15",
+      "abstract": "This is a dummy abstract for paper 45 about trauma.",
+      "tags": [
+        "MCLA",
+        "MEINT",
+        "MCSO"
+      ],
+      "collections": [
+        "Collection 7"
+      ],
+      "citations": [
+        "PAPER16",
+        "PAPER8"
+      ]
+    },
+    {
+      "key": "PAPER46",
+      "title": "Dummy Paper Title 46",
+      "creators": [
+        {
+          "firstName": "Author46",
+          "lastName": "Last46"
+        }
+      ],
+      "date": "1914",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 17",
+      "abstract": "This is a dummy abstract for paper 46 about trauma.",
+      "tags": [
+        "MEETH",
+        "digital_memory",
+        "collective_memory"
+      ],
+      "collections": [
+        "Collection 10"
+      ],
+      "citations": [
+        "PAPER34"
+      ]
+    },
+    {
+      "key": "PAPER47",
+      "title": "Dummy Paper Title 47",
+      "creators": [
+        {
+          "firstName": "Author47",
+          "lastName": "Last47"
+        }
+      ],
+      "date": "1970",
+      "itemType": "book",
+      "publisher": "Publisher 6",
+      "abstract": "This is a dummy abstract for paper 47 about cultural_memory.",
+      "tags": [
+        "trauma",
+        "DMU",
+        "DLIT"
+      ],
+      "collections": [
+        "Collection 9"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER48",
+      "title": "Dummy Paper Title 48",
+      "creators": [
+        {
+          "firstName": "Author48",
+          "lastName": "Last48"
+        }
+      ],
+      "date": "1967",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 17",
+      "abstract": "This is a dummy abstract for paper 48 about cultural_memory.",
+      "tags": [
+        "collective_memory",
+        "digital_memory"
+      ],
+      "collections": [
+        "Collection 6"
+      ],
+      "citations": [
+        "PAPER9",
+        "PAPER4",
+        "PAPER25",
+        "PAPER3",
+        "PAPER5"
+      ]
+    },
+    {
+      "key": "PAPER49",
+      "title": "Dummy Paper Title 49",
+      "creators": [
+        {
+          "firstName": "Author49",
+          "lastName": "Last49"
+        }
+      ],
+      "date": "1856",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 8",
+      "abstract": "This is a dummy abstract for paper 49 about cultural_memory.",
+      "tags": [
+        "MCFI",
+        "trauma"
+      ],
+      "collections": [
+        "Collection 1"
+      ],
+      "citations": [
+        "PAPER27",
+        "PAPER24",
+        "PAPER33",
+        "PAPER10"
+      ]
+    },
+    {
+      "key": "PAPER50",
+      "title": "Dummy Paper Title 50",
+      "creators": [
+        {
+          "firstName": "Author50",
+          "lastName": "Last50"
+        }
+      ],
+      "date": "1940",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 19",
+      "abstract": "This is a dummy abstract for paper 50 about cultural_memory.",
+      "tags": [
+        "MCED",
+        "MCSO"
+      ],
+      "collections": [
+        "Collection 2"
+      ],
+      "citations": [
+        "PAPER15",
+        "PAPER33",
+        "PAPER43"
+      ]
+    },
+    {
+      "key": "PAPER51",
+      "title": "Dummy Paper Title 51",
+      "creators": [
+        {
+          "firstName": "Author51",
+          "lastName": "Last51"
+        }
+      ],
+      "date": "1980",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 19",
+      "abstract": "This is a dummy abstract for paper 51 about collective_memory.",
+      "tags": [
+        "DSOC",
+        "DCUL"
+      ],
+      "collections": [
+        "Collection 7"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER52",
+      "title": "Dummy Paper Title 52",
+      "creators": [
+        {
+          "firstName": "Author52",
+          "lastName": "Last52"
+        }
+      ],
+      "date": "1893",
+      "itemType": "book",
+      "publisher": "Publisher 1",
+      "abstract": "This is a dummy abstract for paper 52 about cultural_memory.",
+      "tags": [
+        "MCLI"
+      ],
+      "collections": [
+        "Collection 6"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER53",
+      "title": "Dummy Paper Title 53",
+      "creators": [
+        {
+          "firstName": "Author53",
+          "lastName": "Last53"
+        }
+      ],
+      "date": "1927",
+      "itemType": "book",
+      "publisher": "Publisher 1",
+      "abstract": "This is a dummy abstract for paper 53 about post_memory.",
+      "tags": [
+        "MCED",
+        "MCLI",
+        "cosmopolitan_memory"
+      ],
+      "collections": [
+        "Collection 3"
+      ],
+      "citations": [
+        "PAPER48"
+      ]
+    },
+    {
+      "key": "PAPER54",
+      "title": "Dummy Paper Title 54",
+      "creators": [
+        {
+          "firstName": "Author54",
+          "lastName": "Last54"
+        }
+      ],
+      "date": "2010",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 4",
+      "abstract": "This is a dummy abstract for paper 54 about cultural_memory.",
+      "tags": [
+        "MEARC",
+        "MESUR",
+        "MCLA",
+        "DPSY"
+      ],
+      "collections": [
+        "Collection 3"
+      ],
+      "citations": [
+        "PAPER32"
+      ]
+    },
+    {
+      "key": "PAPER55",
+      "title": "Dummy Paper Title 55",
+      "creators": [
+        {
+          "firstName": "Author55",
+          "lastName": "Last55"
+        }
+      ],
+      "date": "2024",
+      "itemType": "book",
+      "publisher": "Publisher 11",
+      "abstract": "This is a dummy abstract for paper 55 about post_memory.",
+      "tags": [
+        "MEINT",
+        "DSOC",
+        "MCLI",
+        "DHIS"
+      ],
+      "collections": [
+        "Collection 2"
+      ],
+      "citations": [
+        "PAPER26",
+        "PAPER43"
+      ]
+    },
+    {
+      "key": "PAPER56",
+      "title": "Dummy Paper Title 56",
+      "creators": [
+        {
+          "firstName": "Author56",
+          "lastName": "Last56"
+        }
+      ],
+      "date": "2020",
+      "itemType": "book",
+      "publisher": "Publisher 12",
+      "abstract": "This is a dummy abstract for paper 56 about collective_memory.",
+      "tags": [
+        "cultural_memory"
+      ],
+      "collections": [
+        "Collection 1"
+      ],
+      "citations": [
+        "PAPER48",
+        "PAPER16",
+        "PAPER33",
+        "PAPER8",
+        "PAPER2"
+      ]
+    },
+    {
+      "key": "PAPER57",
+      "title": "Dummy Paper Title 57",
+      "creators": [
+        {
+          "firstName": "Author57",
+          "lastName": "Last57"
+        }
+      ],
+      "date": "1936",
+      "itemType": "book",
+      "publisher": "Publisher 1",
+      "abstract": "This is a dummy abstract for paper 57 about collective_memory.",
+      "tags": [
+        "MEARC",
+        "MESUR",
+        "MCSO",
+        "MCED"
+      ],
+      "collections": [
+        "Collection 5"
+      ],
+      "citations": [
+        "PAPER1",
+        "PAPER51",
+        "PAPER21"
+      ]
+    },
+    {
+      "key": "PAPER58",
+      "title": "Dummy Paper Title 58",
+      "creators": [
+        {
+          "firstName": "Author58",
+          "lastName": "Last58"
+        }
+      ],
+      "date": "1940",
+      "itemType": "book",
+      "publisher": "Publisher 14",
+      "abstract": "This is a dummy abstract for paper 58 about post_memory.",
+      "tags": [
+        "trauma",
+        "DMU"
+      ],
+      "collections": [
+        "Collection 2"
+      ],
+      "citations": [
+        "PAPER18",
+        "PAPER8",
+        "PAPER13"
+      ]
+    },
+    {
+      "key": "PAPER59",
+      "title": "Dummy Paper Title 59",
+      "creators": [
+        {
+          "firstName": "Author59",
+          "lastName": "Last59"
+        }
+      ],
+      "date": "1956",
+      "itemType": "book",
+      "publisher": "Publisher 14",
+      "abstract": "This is a dummy abstract for paper 59 about post_memory.",
+      "tags": [
+        "MEARC"
+      ],
+      "collections": [
+        "Collection 1"
+      ],
+      "citations": [
+        "PAPER8"
+      ]
+    },
+    {
+      "key": "PAPER60",
+      "title": "Dummy Paper Title 60",
+      "creators": [
+        {
+          "firstName": "Author60",
+          "lastName": "Last60"
+        }
+      ],
+      "date": "1921",
+      "itemType": "book",
+      "publisher": "Publisher 16",
+      "abstract": "This is a dummy abstract for paper 60 about cosmopolitan_memory.",
+      "tags": [
+        "DPOL",
+        "MCSO",
+        "MCMO",
+        "MCLA"
+      ],
+      "collections": [
+        "Collection 1"
+      ],
+      "citations": [
+        "PAPER8",
+        "PAPER31"
+      ]
+    },
+    {
+      "key": "PAPER61",
+      "title": "Dummy Paper Title 61",
+      "creators": [
+        {
+          "firstName": "Author61",
+          "lastName": "Last61"
+        }
+      ],
+      "date": "1859",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 4",
+      "abstract": "This is a dummy abstract for paper 61 about cultural_memory.",
+      "tags": [
+        "MCED",
+        "DLIT",
+        "MCSO"
+      ],
+      "collections": [
+        "Collection 9"
+      ],
+      "citations": [
+        "PAPER23",
+        "PAPER16",
+        "PAPER28",
+        "PAPER31"
+      ]
+    },
+    {
+      "key": "PAPER62",
+      "title": "Dummy Paper Title 62",
+      "creators": [
+        {
+          "firstName": "Author62",
+          "lastName": "Last62"
+        }
+      ],
+      "date": "1919",
+      "itemType": "book",
+      "publisher": "Publisher 14",
+      "abstract": "This is a dummy abstract for paper 62 about digital_memory.",
+      "tags": [
+        "MENET",
+        "cosmopolitan_memory",
+        "MCLA"
+      ],
+      "collections": [
+        "Collection 4"
+      ],
+      "citations": [
+        "PAPER55"
+      ]
+    },
+    {
+      "key": "PAPER63",
+      "title": "Dummy Paper Title 63",
+      "creators": [
+        {
+          "firstName": "Author63",
+          "lastName": "Last63"
+        }
+      ],
+      "date": "1923",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 8",
+      "abstract": "This is a dummy abstract for paper 63 about cosmopolitan_memory.",
+      "tags": [
+        "MCSO",
+        "DSOC"
+      ],
+      "collections": [
+        "Collection 4"
+      ],
+      "citations": [
+        "PAPER27",
+        "PAPER61"
+      ]
+    },
+    {
+      "key": "PAPER64",
+      "title": "Dummy Paper Title 64",
+      "creators": [
+        {
+          "firstName": "Author64",
+          "lastName": "Last64"
+        }
+      ],
+      "date": "1981",
+      "itemType": "book",
+      "publisher": "Publisher 14",
+      "abstract": "This is a dummy abstract for paper 64 about cosmopolitan_memory.",
+      "tags": [
+        "MENET",
+        "DPSY"
+      ],
+      "collections": [
+        "Collection 5"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER65",
+      "title": "Dummy Paper Title 65",
+      "creators": [
+        {
+          "firstName": "Author65",
+          "lastName": "Last65"
+        }
+      ],
+      "date": "1904",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 17",
+      "abstract": "This is a dummy abstract for paper 65 about post_memory.",
+      "tags": [
+        "MCLI"
+      ],
+      "collections": [
+        "Collection 9"
+      ],
+      "citations": [
+        "PAPER27",
+        "PAPER16",
+        "PAPER42"
+      ]
+    },
+    {
+      "key": "PAPER66",
+      "title": "Dummy Paper Title 66",
+      "creators": [
+        {
+          "firstName": "Author66",
+          "lastName": "Last66"
+        }
+      ],
+      "date": "1859",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 6",
+      "abstract": "This is a dummy abstract for paper 66 about collective_memory.",
+      "tags": [
+        "cosmopolitan_memory"
+      ],
+      "collections": [
+        "Collection 4"
+      ],
+      "citations": [
+        "PAPER51",
+        "PAPER17"
+      ]
+    },
+    {
+      "key": "PAPER67",
+      "title": "Dummy Paper Title 67",
+      "creators": [
+        {
+          "firstName": "Author67",
+          "lastName": "Last67"
+        }
+      ],
+      "date": "1943",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 1",
+      "abstract": "This is a dummy abstract for paper 67 about cosmopolitan_memory.",
+      "tags": [
+        "DCUL"
+      ],
+      "collections": [
+        "Collection 5"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER68",
+      "title": "Dummy Paper Title 68",
+      "creators": [
+        {
+          "firstName": "Author68",
+          "lastName": "Last68"
+        }
+      ],
+      "date": "1955",
+      "itemType": "book",
+      "publisher": "Publisher 6",
+      "abstract": "This is a dummy abstract for paper 68 about digital_memory.",
+      "tags": [
+        "trauma"
+      ],
+      "collections": [
+        "Collection 4"
+      ],
+      "citations": [
+        "PAPER62",
+        "PAPER8",
+        "PAPER11",
+        "PAPER36"
+      ]
+    },
+    {
+      "key": "PAPER69",
+      "title": "Dummy Paper Title 69",
+      "creators": [
+        {
+          "firstName": "Author69",
+          "lastName": "Last69"
+        }
+      ],
+      "date": "1949",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 13",
+      "abstract": "This is a dummy abstract for paper 69 about collective_memory.",
+      "tags": [
+        "DPOL",
+        "MCED",
+        "MCLA",
+        "digital_memory"
+      ],
+      "collections": [
+        "Collection 1"
+      ],
+      "citations": [
+        "PAPER62",
+        "PAPER47",
+        "PAPER42"
+      ]
+    },
+    {
+      "key": "PAPER70",
+      "title": "Dummy Paper Title 70",
+      "creators": [
+        {
+          "firstName": "Author70",
+          "lastName": "Last70"
+        }
+      ],
+      "date": "1868",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 8",
+      "abstract": "This is a dummy abstract for paper 70 about trauma.",
+      "tags": [
+        "digital_memory",
+        "MCLA"
+      ],
+      "collections": [
+        "Collection 5"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER71",
+      "title": "Dummy Paper Title 71",
+      "creators": [
+        {
+          "firstName": "Author71",
+          "lastName": "Last71"
+        }
+      ],
+      "date": "1955",
+      "itemType": "book",
+      "publisher": "Publisher 7",
+      "abstract": "This is a dummy abstract for paper 71 about post_memory.",
+      "tags": [
+        "MEINT",
+        "MENET"
+      ],
+      "collections": [
+        "Collection 5"
+      ],
+      "citations": [
+        "PAPER63",
+        "PAPER45"
+      ]
+    },
+    {
+      "key": "PAPER72",
+      "title": "Dummy Paper Title 72",
+      "creators": [
+        {
+          "firstName": "Author72",
+          "lastName": "Last72"
+        }
+      ],
+      "date": "1919",
+      "itemType": "book",
+      "publisher": "Publisher 8",
+      "abstract": "This is a dummy abstract for paper 72 about digital_memory.",
+      "tags": [
+        "DSOC",
+        "collective_memory",
+        "MEINT"
+      ],
+      "collections": [
+        "Collection 6"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER73",
+      "title": "Dummy Paper Title 73",
+      "creators": [
+        {
+          "firstName": "Author73",
+          "lastName": "Last73"
+        }
+      ],
+      "date": "1877",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 9",
+      "abstract": "This is a dummy abstract for paper 73 about trauma.",
+      "tags": [
+        "MCLA",
+        "MCED",
+        "MENET",
+        "MEARC"
+      ],
+      "collections": [
+        "Collection 4"
+      ],
+      "citations": [
+        "PAPER68",
+        "PAPER32"
+      ]
+    },
+    {
+      "key": "PAPER74",
+      "title": "Dummy Paper Title 74",
+      "creators": [
+        {
+          "firstName": "Author74",
+          "lastName": "Last74"
+        }
+      ],
+      "date": "1985",
+      "itemType": "book",
+      "publisher": "Publisher 4",
+      "abstract": "This is a dummy abstract for paper 74 about cosmopolitan_memory.",
+      "tags": [
+        "MENET",
+        "DSOC"
+      ],
+      "collections": [
+        "Collection 8"
+      ],
+      "citations": [
+        "PAPER20",
+        "PAPER71",
+        "PAPER61",
+        "PAPER69"
+      ]
+    },
+    {
+      "key": "PAPER75",
+      "title": "Dummy Paper Title 75",
+      "creators": [
+        {
+          "firstName": "Author75",
+          "lastName": "Last75"
+        }
+      ],
+      "date": "1975",
+      "itemType": "book",
+      "publisher": "Publisher 2",
+      "abstract": "This is a dummy abstract for paper 75 about trauma.",
+      "tags": [
+        "cultural_memory",
+        "MCSO"
+      ],
+      "collections": [
+        "Collection 9"
+      ],
+      "citations": [
+        "PAPER38",
+        "PAPER51",
+        "PAPER65",
+        "PAPER16"
+      ]
+    },
+    {
+      "key": "PAPER76",
+      "title": "Dummy Paper Title 76",
+      "creators": [
+        {
+          "firstName": "Author76",
+          "lastName": "Last76"
+        }
+      ],
+      "date": "1878",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 3",
+      "abstract": "This is a dummy abstract for paper 76 about digital_memory.",
+      "tags": [
+        "cultural_memory",
+        "collective_memory",
+        "post_memory"
+      ],
+      "collections": [
+        "Collection 1"
+      ],
+      "citations": [
+        "PAPER44",
+        "PAPER9"
+      ]
+    },
+    {
+      "key": "PAPER77",
+      "title": "Dummy Paper Title 77",
+      "creators": [
+        {
+          "firstName": "Author77",
+          "lastName": "Last77"
+        }
+      ],
+      "date": "1915",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 9",
+      "abstract": "This is a dummy abstract for paper 77 about post_memory.",
+      "tags": [
+        "MCSO",
+        "cultural_memory",
+        "DPSY"
+      ],
+      "collections": [
+        "Collection 10"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER78",
+      "title": "Dummy Paper Title 78",
+      "creators": [
+        {
+          "firstName": "Author78",
+          "lastName": "Last78"
+        }
+      ],
+      "date": "1975",
+      "itemType": "book",
+      "publisher": "Publisher 14",
+      "abstract": "This is a dummy abstract for paper 78 about digital_memory.",
+      "tags": [
+        "MCLI",
+        "MCED"
+      ],
+      "collections": [
+        "Collection 8"
+      ],
+      "citations": [
+        "PAPER18",
+        "PAPER64",
+        "PAPER17",
+        "PAPER13"
+      ]
+    },
+    {
+      "key": "PAPER79",
+      "title": "Dummy Paper Title 79",
+      "creators": [
+        {
+          "firstName": "Author79",
+          "lastName": "Last79"
+        }
+      ],
+      "date": "1966",
+      "itemType": "book",
+      "publisher": "Publisher 5",
+      "abstract": "This is a dummy abstract for paper 79 about cultural_memory.",
+      "tags": [
+        "DPSY",
+        "digital_memory",
+        "DSOC",
+        "collective_memory"
+      ],
+      "collections": [
+        "Collection 9"
+      ],
+      "citations": [
+        "PAPER39",
+        "PAPER48",
+        "PAPER14",
+        "PAPER45"
+      ]
+    },
+    {
+      "key": "PAPER80",
+      "title": "Dummy Paper Title 80",
+      "creators": [
+        {
+          "firstName": "Author80",
+          "lastName": "Last80"
+        }
+      ],
+      "date": "1997",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 20",
+      "abstract": "This is a dummy abstract for paper 80 about trauma.",
+      "tags": [
+        "MENET"
+      ],
+      "collections": [
+        "Collection 4"
+      ],
+      "citations": [
+        "PAPER63",
+        "PAPER52",
+        "PAPER17",
+        "PAPER47",
+        "PAPER28"
+      ]
+    },
+    {
+      "key": "PAPER81",
+      "title": "Dummy Paper Title 81",
+      "creators": [
+        {
+          "firstName": "Author81",
+          "lastName": "Last81"
+        }
+      ],
+      "date": "1957",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 6",
+      "abstract": "This is a dummy abstract for paper 81 about collective_memory.",
+      "tags": [
+        "digital_memory"
+      ],
+      "collections": [
+        "Collection 8"
+      ],
+      "citations": [
+        "PAPER73",
+        "PAPER9",
+        "PAPER30"
+      ]
+    },
+    {
+      "key": "PAPER82",
+      "title": "Dummy Paper Title 82",
+      "creators": [
+        {
+          "firstName": "Author82",
+          "lastName": "Last82"
+        }
+      ],
+      "date": "1987",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 4",
+      "abstract": "This is a dummy abstract for paper 82 about post_memory.",
+      "tags": [
+        "MCED",
+        "DLIT"
+      ],
+      "collections": [
+        "Collection 8"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER83",
+      "title": "Dummy Paper Title 83",
+      "creators": [
+        {
+          "firstName": "Author83",
+          "lastName": "Last83"
+        }
+      ],
+      "date": "1895",
+      "itemType": "book",
+      "publisher": "Publisher 12",
+      "abstract": "This is a dummy abstract for paper 83 about trauma.",
+      "tags": [
+        "DPSY",
+        "MCMO",
+        "MCLA"
+      ],
+      "collections": [
+        "Collection 7"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER84",
+      "title": "Dummy Paper Title 84",
+      "creators": [
+        {
+          "firstName": "Author84",
+          "lastName": "Last84"
+        }
+      ],
+      "date": "1922",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 7",
+      "abstract": "This is a dummy abstract for paper 84 about trauma.",
+      "tags": [
+        "MCSO",
+        "MCMO",
+        "MCFI",
+        "DCUL"
+      ],
+      "collections": [
+        "Collection 1"
+      ],
+      "citations": [
+        "PAPER34",
+        "PAPER4"
+      ]
+    },
+    {
+      "key": "PAPER85",
+      "title": "Dummy Paper Title 85",
+      "creators": [
+        {
+          "firstName": "Author85",
+          "lastName": "Last85"
+        }
+      ],
+      "date": "1905",
+      "itemType": "book",
+      "publisher": "Publisher 6",
+      "abstract": "This is a dummy abstract for paper 85 about digital_memory.",
+      "tags": [
+        "trauma",
+        "MEARC",
+        "collective_memory"
+      ],
+      "collections": [
+        "Collection 10"
+      ],
+      "citations": [
+        "PAPER64",
+        "PAPER8",
+        "PAPER46",
+        "PAPER4"
+      ]
+    },
+    {
+      "key": "PAPER86",
+      "title": "Dummy Paper Title 86",
+      "creators": [
+        {
+          "firstName": "Author86",
+          "lastName": "Last86"
+        }
+      ],
+      "date": "1993",
+      "itemType": "book",
+      "publisher": "Publisher 15",
+      "abstract": "This is a dummy abstract for paper 86 about collective_memory.",
+      "tags": [
+        "MCSO",
+        "MEARC"
+      ],
+      "collections": [
+        "Collection 4"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER87",
+      "title": "Dummy Paper Title 87",
+      "creators": [
+        {
+          "firstName": "Author87",
+          "lastName": "Last87"
+        }
+      ],
+      "date": "1995",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 15",
+      "abstract": "This is a dummy abstract for paper 87 about digital_memory.",
+      "tags": [
+        "DLAW",
+        "DMU",
+        "MEINT"
+      ],
+      "collections": [
+        "Collection 3"
+      ],
+      "citations": [
+        "PAPER48"
+      ]
+    },
+    {
+      "key": "PAPER88",
+      "title": "Dummy Paper Title 88",
+      "creators": [
+        {
+          "firstName": "Author88",
+          "lastName": "Last88"
+        }
+      ],
+      "date": "1851",
+      "itemType": "book",
+      "publisher": "Publisher 1",
+      "abstract": "This is a dummy abstract for paper 88 about post_memory.",
+      "tags": [
+        "MEETH"
+      ],
+      "collections": [
+        "Collection 4"
+      ],
+      "citations": [
+        "PAPER55",
+        "PAPER23",
+        "PAPER36"
+      ]
+    },
+    {
+      "key": "PAPER89",
+      "title": "Dummy Paper Title 89",
+      "creators": [
+        {
+          "firstName": "Author89",
+          "lastName": "Last89"
+        }
+      ],
+      "date": "1881",
+      "itemType": "book",
+      "publisher": "Publisher 2",
+      "abstract": "This is a dummy abstract for paper 89 about cultural_memory.",
+      "tags": [
+        "post_memory",
+        "MENET",
+        "MEETH",
+        "DLIT"
+      ],
+      "collections": [
+        "Collection 3"
+      ],
+      "citations": [
+        "PAPER51",
+        "PAPER53"
+      ]
+    },
+    {
+      "key": "PAPER90",
+      "title": "Dummy Paper Title 90",
+      "creators": [
+        {
+          "firstName": "Author90",
+          "lastName": "Last90"
+        }
+      ],
+      "date": "1871",
+      "itemType": "book",
+      "publisher": "Publisher 10",
+      "abstract": "This is a dummy abstract for paper 90 about post_memory.",
+      "tags": [
+        "DCUL",
+        "post_memory",
+        "MESUR",
+        "MCLI"
+      ],
+      "collections": [
+        "Collection 7"
+      ],
+      "citations": [
+        "PAPER73",
+        "PAPER43",
+        "PAPER26"
+      ]
+    },
+    {
+      "key": "PAPER91",
+      "title": "Dummy Paper Title 91",
+      "creators": [
+        {
+          "firstName": "Author91",
+          "lastName": "Last91"
+        }
+      ],
+      "date": "1882",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 10",
+      "abstract": "This is a dummy abstract for paper 91 about cosmopolitan_memory.",
+      "tags": [
+        "MEETH",
+        "post_memory",
+        "DPOL"
+      ],
+      "collections": [
+        "Collection 1"
+      ],
+      "citations": [
+        "PAPER90",
+        "PAPER67",
+        "PAPER5"
+      ]
+    },
+    {
+      "key": "PAPER92",
+      "title": "Dummy Paper Title 92",
+      "creators": [
+        {
+          "firstName": "Author92",
+          "lastName": "Last92"
+        }
+      ],
+      "date": "1963",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 20",
+      "abstract": "This is a dummy abstract for paper 92 about cosmopolitan_memory.",
+      "tags": [
+        "DCUL",
+        "DPOL",
+        "DLAW"
+      ],
+      "collections": [
+        "Collection 8"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER93",
+      "title": "Dummy Paper Title 93",
+      "creators": [
+        {
+          "firstName": "Author93",
+          "lastName": "Last93"
+        }
+      ],
+      "date": "1941",
+      "itemType": "book",
+      "publisher": "Publisher 4",
+      "abstract": "This is a dummy abstract for paper 93 about digital_memory.",
+      "tags": [
+        "collective_memory",
+        "MENET",
+        "DSOC",
+        "MEARC"
+      ],
+      "collections": [
+        "Collection 2"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER94",
+      "title": "Dummy Paper Title 94",
+      "creators": [
+        {
+          "firstName": "Author94",
+          "lastName": "Last94"
+        }
+      ],
+      "date": "2025",
+      "itemType": "book",
+      "publisher": "Publisher 18",
+      "abstract": "This is a dummy abstract for paper 94 about cosmopolitan_memory.",
+      "tags": [
+        "DLIT",
+        "MEARC",
+        "digital_memory",
+        "DCUL"
+      ],
+      "collections": [
+        "Collection 2"
+      ],
+      "citations": [
+        "PAPER27",
+        "PAPER18",
+        "PAPER79",
+        "PAPER32"
+      ]
+    },
+    {
+      "key": "PAPER95",
+      "title": "Dummy Paper Title 95",
+      "creators": [
+        {
+          "firstName": "Author95",
+          "lastName": "Last95"
+        }
+      ],
+      "date": "2016",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 3",
+      "abstract": "This is a dummy abstract for paper 95 about trauma.",
+      "tags": [
+        "DLIT",
+        "DSOC"
+      ],
+      "collections": [
+        "Collection 8"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER96",
+      "title": "Dummy Paper Title 96",
+      "creators": [
+        {
+          "firstName": "Author96",
+          "lastName": "Last96"
+        }
+      ],
+      "date": "2000",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 12",
+      "abstract": "This is a dummy abstract for paper 96 about post_memory.",
+      "tags": [
+        "MENET",
+        "MEINT",
+        "cultural_memory",
+        "MEETH"
+      ],
+      "collections": [
+        "Collection 3"
+      ],
+      "citations": [
+        "PAPER1",
+        "PAPER82",
+        "PAPER4"
+      ]
+    },
+    {
+      "key": "PAPER97",
+      "title": "Dummy Paper Title 97",
+      "creators": [
+        {
+          "firstName": "Author97",
+          "lastName": "Last97"
+        }
+      ],
+      "date": "1865",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 3",
+      "abstract": "This is a dummy abstract for paper 97 about trauma.",
+      "tags": [
+        "DLAW",
+        "DHIS",
+        "MESUR",
+        "MEARC"
+      ],
+      "collections": [
+        "Collection 4"
+      ],
+      "citations": []
+    },
+    {
+      "key": "PAPER98",
+      "title": "Dummy Paper Title 98",
+      "creators": [
+        {
+          "firstName": "Author98",
+          "lastName": "Last98"
+        }
+      ],
+      "date": "1912",
+      "itemType": "journalArticle",
+      "publicationTitle": "Journal 19",
+      "abstract": "This is a dummy abstract for paper 98 about cultural_memory.",
+      "tags": [
+        "MESUR",
+        "MEINT"
+      ],
+      "collections": [
+        "Collection 3"
+      ],
+      "citations": [
+        "PAPER81",
+        "PAPER31"
+      ]
+    },
+    {
+      "key": "PAPER99",
+      "title": "Dummy Paper Title 99",
+      "creators": [
+        {
+          "firstName": "Author99",
+          "lastName": "Last99"
+        }
+      ],
+      "date": "1946",
+      "itemType": "book",
+      "publisher": "Publisher 13",
+      "abstract": "This is a dummy abstract for paper 99 about cultural_memory.",
+      "tags": [
+        "DSOC"
+      ],
+      "collections": [
+        "Collection 10"
+      ],
+      "citations": [
+        "PAPER38",
+        "PAPER15",
+        "PAPER51"
+      ]
+    },
+    {
+      "key": "PAPER100",
+      "title": "Dummy Paper Title 100",
+      "creators": [
+        {
+          "firstName": "Author100",
+          "lastName": "Last100"
+        }
+      ],
+      "date": "1904",
+      "itemType": "book",
+      "publisher": "Publisher 1",
+      "abstract": "This is a dummy abstract for paper 100 about cultural_memory.",
+      "tags": [
+        "digital_memory",
+        "MEINT",
+        "MCMO"
+      ],
+      "collections": [
+        "Collection 2"
+      ],
+      "citations": [
+        "PAPER73"
+      ]
+    }
+  ]
+}
