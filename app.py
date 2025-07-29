@@ -60,6 +60,12 @@ st.markdown("""
         margin: 0.1rem;
         display: inline-block;
     }
+    .tag-input {
+        border: 1px solid #ccc;
+        border-radius: 0.3rem;
+        padding: 0.2rem 0.5rem;
+        margin: 0.1rem;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -100,134 +106,108 @@ class StreamlitApp:
             papers = self.bibtex_processor.parse_bibtex(temp_file)
             
             # Auto-tag papers
-            tagged_papers = []
             for paper in papers:
-                # Get existing keywords from BibTeX
-                existing_keywords = paper.get('keywords', [])
-                
-                # Predict tags using title, abstract, and existing keywords
-                tags = self.auto_tagger.predict_tags(
+                paper['tags'] = self.auto_tagger.predict_tags(
                     paper.get('title', ''), 
                     paper.get('abstract', ''), 
-                    existing_keywords
+                    paper.get('keywords', [])
                 )
-                paper['tags'] = tags
-                tagged_papers.append(paper)
             
-            return tagged_papers
-        except Exception as e:
-            # Provide more helpful error messages
-            if "encoding" in str(e).lower() or "decode" in str(e).lower():
-                raise Exception(f"File encoding issue: {str(e)}. Please ensure your BibTeX file is saved in UTF-8 encoding.")
-            else:
-                raise Exception(f"Error processing BibTeX file: {str(e)}")
+            return papers
         finally:
             # Clean up temporary file
-            try:
+            if os.path.exists(temp_file):
                 os.unlink(temp_file)
-            except:
-                pass
+    
+    def process_json_papers(self, json_content: str) -> List[Dict]:
+        """Process JSON papers and return them with optional auto-tagging."""
+        try:
+            data = json.loads(json_content)
+            papers = data.get('papers', []) if isinstance(data, dict) else data
+            
+            # Ensure each paper has required fields
+            processed_papers = []
+            for paper in papers:
+                if isinstance(paper, dict) and paper.get('title'):
+                    # Add default fields if missing
+                    paper.setdefault('authors', [])
+                    paper.setdefault('year', 'Unknown')
+                    paper.setdefault('journal', 'Unknown')
+                    paper.setdefault('abstract', '')
+                    paper.setdefault('tags', [])
+                    processed_papers.append(paper)
+            
+            return processed_papers
+        except json.JSONDecodeError as e:
+            st.error(f"Invalid JSON format: {e}")
+            return []
+    
+    def create_zotero_export(self, papers: List[Dict]) -> str:
+        """Create a Zotero-compatible export format."""
+        zotero_entries = []
+        
+        for i, paper in enumerate(papers):
+            # Create a unique key for Zotero
+            key = f"paper_{i}_{paper.get('year', 'unknown')}"
+            
+            # Format authors for Zotero
+            authors = paper.get('authors', [])
+            if isinstance(authors, list):
+                author_str = " and ".join(authors)
+            else:
+                author_str = str(authors)
+            
+            # Create Zotero entry
+            zotero_entry = f"""@article{{{key},
+  title = {{{paper.get('title', 'Unknown Title')}}},
+  author = {{{author_str}}},
+  journal = {{{paper.get('journal', 'Unknown')}}},
+  year = {{{paper.get('year', 'Unknown')}}},
+  abstract = {{{paper.get('abstract', '')}}},
+  keywords = {{{', '.join(paper.get('tags', []))}}},
+  doi = {{{paper.get('doi', '')}}},
+  url = {{{paper.get('url', '')}}}
+}}"""
+            zotero_entries.append(zotero_entry)
+        
+        return "\n\n".join(zotero_entries)
     
     def display_visualizations(self, papers: List[Dict]):
         """Display visualizations for the papers."""
-        if not papers:
-            st.warning("No papers to visualize. Please upload and process papers first.")
-            return
-        
         st.header("📊 Visualizations")
         
-        # Store papers in session state to prevent recreation
-        if 'processed_papers' not in st.session_state:
-            st.session_state.processed_papers = papers
+        if not papers:
+            st.warning("No papers to visualize.")
+            return
         
-        # Create separate tabs for different functionality
-        charts_tab, analysis_tab = st.tabs(["📊 Charts & Explorers", "📈 Analysis Tools"])
+        # Create visualizations
+        viz = Visualizer()
+        viz_data = viz.create_visualizations(papers)
         
-        # Tab 1: Charts and Explorers
-        with charts_tab:
-            st.subheader("📊 Interactive Charts & Explorers")
+        if viz_data:
+            # Display tag network
+            if 'tag_network' in viz_data:
+                st.subheader("🏷️ Tag Network")
+                if viz_data['tag_network'].startswith('<'):
+                    st.components.v1.html(viz_data['tag_network'], height=600)
+                else:
+                    st.write(viz_data['tag_network'])
             
-            # Create visualizations only once and store in session state
-            if 'charts_html' not in st.session_state:
-                with st.spinner("Creating visualizations..."):
-                    visualizations = create_visualizations_cached(st.session_state.processed_papers)
-                    st.session_state.charts_html = visualizations
-            
-            # Display cached visualizations first
-            visualizations = st.session_state.charts_html
-            
-            if 'tag_network' in visualizations:
-                st.subheader("🔗 Tag Network")
-                st.components.v1.html(visualizations['tag_network'], height=600)
-            
-            if 'tag_distribution' in visualizations:
+            # Display tag distribution
+            if 'tag_distribution' in viz_data:
                 st.subheader("📈 Tag Distribution")
-                st.components.v1.html(visualizations['tag_distribution'], height=500)
+                if viz_data['tag_distribution'].startswith('<'):
+                    st.components.v1.html(viz_data['tag_distribution'], height=500)
+                else:
+                    st.write(viz_data['tag_distribution'])
             
-            if 'paper_timeline' in visualizations:
-                st.subheader("📅 Paper Timeline")
-                st.components.v1.html(visualizations['paper_timeline'], height=500)
-            
-            # Add explorers below charts
-            st.markdown("---")
-            st.subheader("🔍 Interactive Explorers")
-            
-            # Simple tag explorer - just show all tags with their papers
-            st.subheader("🏷️ Tag Explorer")
-            
-            # Build tag data
-            tag_papers = {}
-            for paper in papers:
-                for tag in paper.get('tags', []):
-                    if tag not in tag_papers:
-                        tag_papers[tag] = []
-                    tag_papers[tag].append(paper)
-            
-            if tag_papers:
-                # Sort tags by frequency
-                sorted_tags = sorted(tag_papers.items(), key=lambda x: len(x[1]), reverse=True)
-                
-                # Show top 10 tags with their papers
-                for tag, papers_list in sorted_tags[:10]:
-                    with st.expander(f"🏷️ {tag} ({len(papers_list)} papers)"):
-                        for paper in papers_list:
-                            st.write(f"• **{paper.get('title', 'Unknown')[:60]}...** ({paper.get('year', 'Unknown')})")
-                            st.write(f"  Authors: {', '.join(paper.get('authors', []))}")
-                            st.write(f"  Journal: {paper.get('journal', 'Unknown')}")
-                            st.write("---")
-            
-            # Simple paper explorer - just show all papers with their details
-            st.subheader("📄 Paper Explorer")
-            
-            for i, paper in enumerate(papers):
-                with st.expander(f"📄 {paper.get('title', 'Unknown')[:60]}... ({paper.get('year', 'Unknown')})"):
-                    st.write(f"**Title:** {paper.get('title', 'Unknown')}")
-                    st.write(f"**Authors:** {', '.join(paper.get('authors', []))}")
-                    st.write(f"**Year:** {paper.get('year', 'Unknown')}")
-                    st.write(f"**Journal:** {paper.get('journal', 'Unknown')}")
-                    
-                    if paper.get('abstract'):
-                        st.write(f"**Abstract:** {paper.get('abstract')[:200]}...")
-                    
-                    if paper.get('doi'):
-                        st.write(f"**DOI:** {paper.get('doi')}")
-                    
-                    if paper.get('url'):
-                        st.write(f"**URL:** [{paper.get('url')}]({paper.get('url')})")
-                    
-                    # Show tags
-                    tags = paper.get('tags', [])
-                    if tags:
-                        st.write("**Tags:**")
-                        for tag in tags:
-                            st.write(f"• {tag}")
-                    else:
-                        st.write("**Tags:** None")
-        
-        # Tab 2: Analysis Tools
-        with analysis_tab:
-            st.subheader("📈 Analysis Tools")
-            self.display_analysis_tools(st.session_state.processed_papers)
+            # Display year distribution
+            if 'paper_timeline' in viz_data:
+                st.subheader("📅 Publication Timeline")
+                if viz_data['paper_timeline'].startswith('<'):
+                    st.components.v1.html(viz_data['paper_timeline'], height=500)
+                else:
+                    st.write(viz_data['paper_timeline'])
     
     def display_analysis_tools(self, papers: List[Dict]):
         """Display analysis tools and summary statistics."""
@@ -420,50 +400,133 @@ def main():
     st.markdown('<h1 class="main-header">📚 Mnemonic Matrix</h1>', unsafe_allow_html=True)
     st.markdown('<p style="text-align: center; font-size: 1.2rem; color: #666;">BibTeX Processing & Auto-tagging System</p>', unsafe_allow_html=True)
     
+    # Initialize session state for papers
+    if 'papers' not in st.session_state:
+        st.session_state.papers = []
+    
     # Sidebar
-    st.sidebar.title("📋 Upload BibTeX")
+    st.sidebar.title("📋 Input Papers")
     
-    # File upload
-    uploaded_file = st.sidebar.file_uploader(
-        "Choose a BibTeX file",
-        type=['bib'],
-        help="Upload a .bib file containing your papers"
+    # Input method selection
+    input_method = st.sidebar.selectbox(
+        "Choose input method:",
+        ["📄 BibTeX Upload", "📝 JSON Input", "✏️ Manual Entry"]
     )
     
-    # Text input as alternative
+    if input_method == "📄 BibTeX Upload":
+        # File upload
+        uploaded_file = st.sidebar.file_uploader(
+            "Choose a BibTeX file",
+            type=['bib'],
+            help="Upload a .bib file containing your papers"
+        )
+        
+        # Text input as alternative
+        st.sidebar.markdown("---")
+        st.sidebar.markdown("**Or paste BibTeX content:**")
+        bibtex_content = st.sidebar.text_area(
+            "Paste your BibTeX content here",
+            height=200,
+            help="Paste your BibTeX entries directly"
+        )
+        
+        # Add to papers button
+        add_bibtex_button = st.sidebar.button("📥 Add Papers", type="primary")
+        
+        if add_bibtex_button and (uploaded_file is not None or bibtex_content.strip()):
+            with st.spinner("🔄 Adding papers..."):
+                # Get content
+                if uploaded_file is not None:
+                    content = uploaded_file.getvalue().decode('utf-8')
+                    st.success(f"📁 Added file: {uploaded_file.name}")
+                else:
+                    content = bibtex_content
+                    st.success("📝 Added pasted content")
+                
+                # Process papers
+                new_papers = app.process_bibtex_content(content)
+                st.session_state.papers.extend(new_papers)
+                st.success(f"✅ Added {len(new_papers)} papers to your collection!")
+    
+    elif input_method == "📝 JSON Input":
+        st.sidebar.markdown("**Enter papers as JSON:**")
+        json_content = st.sidebar.text_area(
+            "Paste JSON papers here",
+            height=300,
+            help="Enter papers in JSON format. Example: [{'title': 'Paper Title', 'authors': ['Author Name'], 'year': '2023', 'journal': 'Journal Name'}]"
+        )
+        
+        add_json_button = st.sidebar.button("📥 Add Papers", type="primary")
+        
+        if add_json_button and json_content.strip():
+            with st.spinner("🔄 Adding papers..."):
+                new_papers = app.process_json_papers(json_content)
+                if new_papers:
+                    st.session_state.papers.extend(new_papers)
+                    st.success(f"✅ Added {len(new_papers)} papers to your collection!")
+                else:
+                    st.error("❌ No valid papers found in JSON content.")
+    
+    elif input_method == "✏️ Manual Entry":
+        st.sidebar.markdown("**Manual paper entry:**")
+        num_papers = st.sidebar.number_input("Number of papers to add:", min_value=1, max_value=50, value=5)
+        
+        manual_papers = []
+        for i in range(num_papers):
+            with st.sidebar.expander(f"Paper {i+1}"):
+                title = st.text_input(f"Title {i+1}", key=f"title_{i}")
+                authors = st.text_input(f"Authors (comma-separated) {i+1}", key=f"authors_{i}")
+                year = st.text_input(f"Year {i+1}", key=f"year_{i}")
+                journal = st.text_input(f"Journal/Conference {i+1}", key=f"journal_{i}")
+                
+                if title:
+                    paper = {
+                        'title': title,
+                        'authors': [a.strip() for a in authors.split(',') if a.strip()] if authors else [],
+                        'year': year or 'Unknown',
+                        'journal': journal or 'Unknown',
+                        'abstract': '',
+                        'tags': []
+                    }
+                    manual_papers.append(paper)
+        
+        add_manual_button = st.sidebar.button("📥 Add Papers", type="primary")
+        
+        if add_manual_button and manual_papers:
+            st.session_state.papers.extend(manual_papers)
+            st.success(f"✅ Added {len(manual_papers)} papers to your collection!")
+    
+    # Processing section
     st.sidebar.markdown("---")
-    st.sidebar.markdown("**Or paste BibTeX content:**")
-    bibtex_content = st.sidebar.text_area(
-        "Paste your BibTeX content here",
-        height=200,
-        help="Paste your BibTeX entries directly"
-    )
+    st.sidebar.title("🚀 Process Papers")
     
-    # Process button
-    process_button = st.sidebar.button("🚀 Process Papers", type="primary")
+    if st.session_state.papers:
+        st.sidebar.markdown(f"**Papers in collection:** {len(st.session_state.papers)}")
+        
+        # Process button
+        process_button = st.sidebar.button("🤖 Auto-tag Papers", type="primary")
+        
+        if process_button:
+            with st.spinner("🔄 Auto-tagging papers..."):
+                for paper in st.session_state.papers:
+                    if not paper.get('tags'):  # Only tag if not already tagged
+                        paper['tags'] = app.auto_tagger.predict_tags(
+                            paper.get('title', ''),
+                            paper.get('abstract', ''),
+                            paper.get('keywords', [])
+                        )
+                st.success(f"✅ Auto-tagged {len(st.session_state.papers)} papers!")
+        
+        # Clear papers button
+        if st.sidebar.button("🗑️ Clear All Papers"):
+            st.session_state.papers = []
+            st.success("🗑️ Cleared all papers!")
+            st.rerun()
     
     # Main content area
-    if process_button and (uploaded_file is not None or bibtex_content.strip()):
-        
-        with st.spinner("🔄 Processing papers..."):
-            
-            # Get content
-            if uploaded_file is not None:
-                content = uploaded_file.getvalue().decode('utf-8')
-                st.success(f"📁 Processed file: {uploaded_file.name}")
-            else:
-                content = bibtex_content
-                st.success("📝 Processed pasted content")
-            
-            # Process papers
-            papers = app.process_bibtex_content(content)
-            
-            if not papers:
-                st.error("❌ No papers found in the BibTeX content. Please check the format.")
-                return
-            
-            st.success(f"✅ Successfully processed {len(papers)} papers!")
-            
+    papers = st.session_state.papers
+    
+    if papers:
             # Display metrics
             col1, col2, col3, col4 = st.columns(4)
             
@@ -484,7 +547,13 @@ def main():
                 st.metric("📈 Total Tags", len(all_tags))
             
             # Tabs for different views
-            tab1, tab2, tab3, tab4 = st.tabs(["📊 Visualizations", "📋 Papers List", "🏷️ Tag Analysis", "📈 Timeline"])
+            tab1, tab2, tab3, tab4, tab5 = st.tabs([
+                "📊 Visualizations", 
+                "📋 Papers List", 
+                "🏷️ Tag Analysis", 
+                "📈 Timeline",
+                "💾 Export"
+            ])
             
             with tab1:
                 app.display_visualizations(papers)
@@ -504,38 +573,45 @@ def main():
                                 st.markdown(f"**Abstract:** {paper.get('abstract', '')[:200]}...")
                         
                         with col2:
-                            st.markdown("**Tags:**")
-                            for tag in paper.get('tags', []):
-                                st.markdown(f'<span class="tag">{tag}</span>', unsafe_allow_html=True)
+                            tags = paper.get('tags', [])
+                            if tags:
+                                st.markdown("**Auto-generated Tags:**")
+                                for tag in tags:
+                                    st.markdown(f'<span class="tag">{tag}</span>', unsafe_allow_html=True)
+                            else:
+                                st.markdown("**Tags:** *Not yet processed*")
             
             with tab3:
                 st.header("🏷️ Tag Analysis")
                 
-                # Tag statistics
-                tag_counts = Counter(all_tags)
-                top_tags = tag_counts.most_common(10)
-                
-                col1, col2 = st.columns(2)
-                
-                with col1:
-                    st.subheader("Top 10 Tags")
-                    for tag, count in top_tags:
-                        st.markdown(f"**{tag}:** {count} papers")
-                
-                with col2:
-                    st.subheader("Tag Categories")
-                    categories = {
-                        'Machine Learning': sum(1 for tag in all_tags if 'machine_learning' in tag),
-                        'Data Science': sum(1 for tag in all_tags if 'data_science' in tag),
-                        'Computer Science': sum(1 for tag in all_tags if 'computer_science' in tag),
-                        'Research Methods': sum(1 for tag in all_tags if 'research_methods' in tag),
-                        'Technology': sum(1 for tag in all_tags if 'technology' in tag),
-                        'Business': sum(1 for tag in all_tags if 'business' in tag),
-                    }
+                if all_tags:
+                    # Tag statistics
+                    tag_counts = Counter(all_tags)
+                    top_tags = tag_counts.most_common(10)
                     
-                    for category, count in categories.items():
-                        if count > 0:
-                            st.markdown(f"**{category}:** {count} papers")
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        st.subheader("Top 10 Tags")
+                        for tag, count in top_tags:
+                            st.markdown(f"**{tag}:** {count} papers")
+                    
+                    with col2:
+                        st.subheader("Tag Categories")
+                        categories = {
+                            'Memory Studies': sum(1 for tag in all_tags if 'memory' in tag),
+                            'Sociology': sum(1 for tag in all_tags if 'sociology' in tag),
+                            'Political Science': sum(1 for tag in all_tags if 'political' in tag),
+                            'History': sum(1 for tag in all_tags if 'history' in tag),
+                            'Psychology': sum(1 for tag in all_tags if 'psychology' in tag),
+                            'Philosophy': sum(1 for tag in all_tags if 'philosophy' in tag),
+                        }
+                        
+                        for category, count in categories.items():
+                            if count > 0:
+                                st.markdown(f"**{category}:** {count} papers")
+                else:
+                    st.info("📝 No tags yet. Click 'Auto-tag Papers' to generate tags.")
             
             with tab4:
                 st.header("📈 Publication Timeline")
@@ -556,9 +632,10 @@ def main():
                     for year, count in sorted(year_counts.items()):
                         st.markdown(f"**{year}:** {count} papers")
             
-            # Download results
-            st.markdown("---")
-            st.header("💾 Download Results")
+            with tab5:
+                st.header("💾 Export Options")
+                
+                col1, col2 = st.columns(2)
             
             # Create JSON for download
             results_json = {
@@ -578,49 +655,78 @@ def main():
                 file_name="processed_papers.json",
                 mime="application/json"
             )
+            
+            with col2:
+                st.subheader("📚 Export to Zotero")
+                # Create Zotero-compatible BibTeX
+                zotero_bibtex = app.create_zotero_export(papers)
+                
+                st.download_button(
+                    label="📚 Download BibTeX for Zotero",
+                    data=zotero_bibtex,
+                    file_name="papers_for_zotero.bib",
+                    mime="text/plain"
+                )
+                
+                st.markdown("**Instructions for Zotero import:**")
+                st.markdown("""
+                1. Download the BibTeX file above
+                2. Open Zotero
+                3. Go to File → Import
+                4. Select the downloaded .bib file
+                5. Your papers will be imported with auto-generated tags as keywords
+                """)
     
     else:
         # Welcome screen
         st.markdown("""
         ## 🎯 Welcome to Mnemonic Matrix
         
-        This application processes BibTeX files and automatically tags papers based on their content.
+        This application automatically tags papers using ML and exports them for Zotero import.
         
         ### 📋 How to use:
-        1. **Upload a BibTeX file** (.bib format) using the sidebar, OR
-        2. **Paste BibTeX content** directly into the text area
-        3. **Click "Process Papers"** to start the analysis
-        4. **Explore the results** in the different tabs
+        1. **Add papers** using any input method in the sidebar
+        2. **Click "Auto-tag Papers"** to generate ML tags
+        3. **View results** in the different tabs
+        4. **Export to Zotero** using the "Export" tab
         
         ### 📊 What you'll get:
-        - **Auto-tagged papers** with intelligent categorization
+        - **ML-powered auto-tagging** of papers based on content
+        - **Flexible paper input** (BibTeX, JSON, or manual entry)
         - **Interactive visualizations** showing tag relationships
+        - **Zotero-compatible export** for easy import
         - **Statistical analysis** of your paper collection
-        - **Downloadable results** in JSON format
         
-        ### 📝 Supported BibTeX fields:
-        - `title`, `author`, `abstract`, `year`
-        - `journal`, `booktitle`, `volume`, `pages`
-        - `doi`, `url`, `keywords`
+        ### 📝 Supported input formats:
+        - **BibTeX:** Standard .bib files
+        - **JSON:** Array of paper objects with title, authors, year, journal
+        - **Manual:** Form-based entry for individual papers
         
-        ### 🏷️ Auto-tagging categories:
-        - Machine Learning, Data Science, Computer Science
-        - Research Methods, Academic Fields, Technology
-        - Business, Healthcare, Education, and more
+        ### 🤖 ML Auto-tagging:
+        - Automatically analyzes paper titles, abstracts, and content
+        - Generates relevant tags using machine learning
+        - Covers academic fields, research methods, and topics
+        - Tags are exported as keywords for Zotero
         """)
         
-        # Example BibTeX
-        with st.expander("📖 Example BibTeX Format"):
+        # Example JSON
+        with st.expander("📖 Example JSON Format"):
             st.code("""
-@article{example,
-  title={Machine Learning Applications in Healthcare},
-  author={Smith, John and Johnson, Mary},
-  journal={Journal of Medical AI},
-  year={2023},
-  abstract={This paper explores machine learning algorithms in healthcare...},
-  keywords={machine learning, healthcare, deep learning}
-}
-            """, language="bibtex")
+[
+  {
+    "title": "Machine Learning Applications in Healthcare",
+    "authors": ["Smith, John", "Johnson, Mary"],
+    "year": "2023",
+    "journal": "Journal of Medical AI"
+  },
+  {
+    "title": "Data Science in Education",
+    "authors": ["Brown, Alice"],
+    "year": "2022",
+    "journal": "Educational Technology"
+  }
+]
+            """, language="json")
 
 if __name__ == "__main__":
     main()
