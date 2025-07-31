@@ -87,20 +87,20 @@ class Visualizer:
         tag_to_index = {}
         
         for i, (tag, count) in enumerate(top_tags):
-            # Calculate node size based on frequency (log scale for better visualization)
-            size = 8 + (count / max_frequency) * 25
+            # Calculate node size based on frequency with better scaling
+            size = 12 + (count / max_frequency) * 35  # Larger base size and range
             
-            # Calculate color based on frequency with better color scheme
+            # Calculate color based on frequency with modern color scheme
             color_value = count / max_frequency
-            # Use a more vibrant color scheme for dark theme
+            # Use a modern, vibrant color scheme for light theme
             if color_value > 0.7:
-                color = '#FF6B9D'  # Pink for high frequency
+                color = '#e74c3c'  # Red for high frequency
             elif color_value > 0.4:
-                color = '#4ECDC4'  # Teal for medium frequency
+                color = '#3498db'  # Blue for medium frequency
             elif color_value > 0.2:
-                color = '#45B7D1'  # Blue for lower frequency
+                color = '#2ecc71'  # Green for lower frequency
             else:
-                color = '#96CEB4'  # Green for lowest frequency
+                color = '#f39c12'  # Orange for lowest frequency
             
             tag_nodes.append({
                 'id': tag,
@@ -130,13 +130,17 @@ class Visualizer:
                     tag_cooccurrence[edge_key] += 1
         
         # Create edges with weights based on co-occurrence
-        for (tag1, tag2), weight in tag_cooccurrence.items():
+        # Sort by weight and take only the strongest connections to reduce clutter
+        sorted_edges = sorted(tag_cooccurrence.items(), key=lambda x: x[1], reverse=True)
+        max_edges = min(len(sorted_edges), 60)  # Limit number of edges for clarity
+        
+        for (tag1, tag2), weight in sorted_edges[:max_edges]:
             if weight >= 1:  # Only show edges with at least 1 co-occurrence
                 edges.append({
                     'source': tag1,
                     'target': tag2,
                     'weight': weight,
-                    'width': min(weight * 1.5, 6)  # Cap width for readability
+                    'width': min(weight * 1.2, 5)  # Reduced width cap
                 })
         
         # Generate force-directed layout positions
@@ -153,8 +157,8 @@ class Visualizer:
             adjacency_matrix[source_idx][target_idx] = edge['weight']
             adjacency_matrix[target_idx][source_idx] = edge['weight']
         
-        # Simple force-directed layout simulation
-        positions = self._force_directed_layout(adjacency_matrix, n_iterations=100)
+        # Enhanced force-directed layout simulation with better spacing
+        positions = self._force_directed_layout(adjacency_matrix, n_iterations=150)
         
         # Create the network visualization with enhanced features
         fig = go.Figure()
@@ -173,19 +177,19 @@ class Visualizer:
                     x=[source_pos[0], target_pos[0]],
                     y=[source_pos[1], target_pos[1]],
                     mode='lines',
-                    line=dict(
-                        width=edge['width'], 
-                        color='rgba(255,255,255,0.3)',
-                        shape='spline'
-                    ),
+                                    line=dict(
+                    width=min(edge['width'] * 0.8, 4),  # Slightly thicker edges
+                    color='rgba(52,73,94,0.4)',  # Dark blue-gray for light theme
+                    shape='spline'
+                ),
                     hoverinfo='text',
                     text=[f"<b>{edge['source']} ↔ {edge['target']}</b><br>Co-occurrence: {edge['weight']} papers"],
                     showlegend=False,
                     hoverlabel=dict(
-                        bgcolor="rgba(0,0,0,0.8)", 
+                        bgcolor="rgba(255,255,255,0.95)", 
                         font_size=12, 
-                        bordercolor="rgba(255,255,255,0.3)",
-                        font_color="white"
+                        bordercolor="rgba(0,0,0,0.2)",
+                        font_color="#2c3e50"
                     ),
                     name='Connections'
                 ))
@@ -226,8 +230,8 @@ class Visualizer:
             marker=dict(
                 size=node_sizes,
                 color=node_colors,
-                line=dict(width=3, color='rgba(255,255,255,0.8)'),
-                opacity=0.9,
+                line=dict(width=2, color='rgba(255,255,255,0.9)'),
+                opacity=0.95,
                 symbol='circle',
                 gradient=dict(
                     type="radial",
@@ -236,7 +240,7 @@ class Visualizer:
             ),
             text=node_labels,
             textposition="middle center",
-            textfont=dict(size=9, color='white', family='Arial Black'),
+            textfont=dict(size=11, color='white', family='Arial Black'),
             hoverinfo='text',
             hovertext=hover_texts,
             name='Tags',
@@ -244,12 +248,12 @@ class Visualizer:
             hovertemplate='%{hovertext}<extra></extra>'
         ))
         
-        # Add frequency legend with dark theme
+        # Add frequency legend with modern color scheme
         legend_items = [
-            ('High Frequency (>70%)', '#FF6B9D'),
-            ('Medium Frequency (40-70%)', '#4ECDC4'),
-            ('Low Frequency (20-40%)', '#45B7D1'),
-            ('Very Low Frequency (<20%)', '#96CEB4')
+            ('High Frequency (>70%)', '#e74c3c'),
+            ('Medium Frequency (40-70%)', '#3498db'),
+            ('Low Frequency (20-40%)', '#2ecc71'),
+            ('Very Low Frequency (<20%)', '#f39c12')
         ]
         
         for label, color in legend_items:
@@ -261,42 +265,44 @@ class Visualizer:
                 showlegend=True
             ))
         
-        # Update layout for dark theme and enhanced interactivity
+        # Update layout for modern light theme and enhanced interactivity
         fig.update_layout(
             title={
                 'text': '🔗 Interactive Knowledge Network',
                 'x': 0.5,
                 'xanchor': 'center',
-                'font': {'size': 24, 'color': '#ffffff'}
+                'font': {'size': 26, 'color': '#2c3e50', 'family': 'Arial Black'}
             },
             xaxis=dict(
                 showticklabels=False,
-                showgrid=False,
+                showgrid=True,
+                gridcolor='rgba(200,200,200,0.3)',
                 zeroline=False,
                 showline=False,
-                range=[-350, 350]
+                range=[-600, 600]
             ),
             yaxis=dict(
                 showticklabels=False,
-                showgrid=False,
+                showgrid=True,
+                gridcolor='rgba(200,200,200,0.3)',
                 zeroline=False,
                 showline=False,
-                range=[-350, 350]
+                range=[-600, 600]
             ),
-            plot_bgcolor='#1a1a1a',
-            paper_bgcolor='#0f0f0f',
-            margin=dict(l=20, r=20, t=80, b=20),
-            height=800,
+            plot_bgcolor='#f8f9fa',
+            paper_bgcolor='#ffffff',
+            margin=dict(l=50, r=50, t=120, b=50),
+            height=900,
             showlegend=True,
             legend=dict(
                 yanchor="top",
-                y=0.99,
+                y=0.98,
                 xanchor="left",
-                x=0.01,
-                bgcolor='rgba(0,0,0,0.7)',
-                bordercolor='rgba(255,255,255,0.2)',
+                x=0.02,
+                bgcolor='rgba(255,255,255,0.95)',
+                bordercolor='rgba(0,0,0,0.2)',
                 borderwidth=1,
-                font=dict(color='white')
+                font=dict(color='#2c3e50', size=12, family='Arial')
             ),
             # Enhanced interactivity
             clickmode='event+select',
@@ -385,13 +391,13 @@ class Visualizer:
             // Create an enhanced tooltip
             const tooltip = document.createElement('div');
             tooltip.innerHTML = `
-                <div style="background: rgba(0,0,0,0.9); color: white; padding: 15px; border-radius: 8px; 
-                     border: 1px solid rgba(255,255,255,0.3); box-shadow: 0 4px 20px rgba(0,0,0,0.5); 
-                     max-width: 300px; font-family: Arial, sans-serif;">
-                    <h3 style="margin: 0 0 10px 0; color: #4ECDC4;">${tagName}</h3>
-                    <p style="margin: 5px 0; font-size: 14px;">Click to explore connections</p>
-                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.2);">
-                        <small style="color: #888;">Connected nodes will be highlighted</small>
+                <div style="background: rgba(255,255,255,0.98); color: #2c3e50; padding: 18px; border-radius: 12px; 
+                     border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 8px 32px rgba(0,0,0,0.15); 
+                     max-width: 320px; font-family: Arial, sans-serif; backdrop-filter: blur(10px);">
+                    <h3 style="margin: 0 0 12px 0; color: #3498db; font-size: 18px;">${tagName}</h3>
+                    <p style="margin: 8px 0; font-size: 14px; color: #34495e;">Click to explore connections</p>
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.1);">
+                        <small style="color: #7f8c8d;">Connected nodes will be highlighted</small>
                     </div>
                 </div>
             `;
@@ -407,24 +413,29 @@ class Visualizer:
             }, 4000);
         }
         
-        // Add enhanced controls with dark theme
+        // Add enhanced controls with modern light theme
         function addNetworkControls() {
             const controls = document.createElement('div');
             controls.innerHTML = `
-                <div style="background: rgba(0,0,0,0.8); padding: 15px; border-radius: 10px; 
-                     border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
-                    <h4 style="margin: 0 0 15px 0; color: #4ECDC4; font-size: 16px;">🎮 Network Controls</h4>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                        <button onclick="resetZoom()" style="padding: 8px 12px; background: linear-gradient(45deg, #3498db, #2980b9); 
-                                color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">🔍 Reset</button>
-                        <button onclick="fitToView()" style="padding: 8px 12px; background: linear-gradient(45deg, #27ae60, #229954); 
-                                color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">📐 Fit</button>
-                        <button onclick="refreshNetwork()" style="padding: 8px 12px; background: linear-gradient(45deg, #e74c3c, #c0392b); 
-                                color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">🔄 Refresh</button>
-                        <button onclick="toggleAutoRefresh()" id="autoRefreshBtn" style="padding: 8px 12px; background: linear-gradient(45deg, #f39c12, #e67e22); 
-                                color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">⏰ Auto</button>
+                <div style="background: rgba(255,255,255,0.95); padding: 15px; border-radius: 12px; 
+                     border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 8px 32px rgba(0,0,0,0.1); 
+                     backdrop-filter: blur(10px);">
+                    <h4 style="margin: 0 0 15px 0; color: #2c3e50; font-size: 16px; font-family: Arial, sans-serif;">🎮 Network Controls</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <button onclick="resetZoom()" style="padding: 10px 14px; background: linear-gradient(45deg, #3498db, #2980b9); 
+                                color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; 
+                                transition: all 0.3s ease;">🔍 Reset</button>
+                        <button onclick="fitToView()" style="padding: 10px 14px; background: linear-gradient(45deg, #27ae60, #229954); 
+                                color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; 
+                                transition: all 0.3s ease;">📐 Fit</button>
+                        <button onclick="refreshNetwork()" style="padding: 10px 14px; background: linear-gradient(45deg, #e74c3c, #c0392b); 
+                                color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; 
+                                transition: all 0.3s ease;">🔄 Refresh</button>
+                        <button onclick="toggleAutoRefresh()" id="autoRefreshBtn" style="padding: 10px 14px; background: linear-gradient(45deg, #f39c12, #e67e22); 
+                                color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; 
+                                transition: all 0.3s ease;">⏰ Auto</button>
                     </div>
-                    <div style="margin-top: 10px; font-size: 11px; color: #888;">
+                    <div style="margin-top: 12px; font-size: 11px; color: #7f8c8d; font-family: Arial, sans-serif;">
                         <div>⌨️ Ctrl+R: Refresh</div>
                         <div>⌨️ Ctrl+Z: Reset Zoom</div>
                         <div>⌨️ Ctrl+F: Fit View</div>
@@ -448,12 +459,15 @@ class Visualizer:
                 top: 10px;
                 left: 10px;
                 z-index: 1000;
-                background: rgba(0,0,0,0.8);
-                color: #4ECDC4;
-                padding: 8px 12px;
-                border-radius: 6px;
+                background: rgba(255,255,255,0.95);
+                color: #2c3e50;
+                padding: 10px 16px;
+                border-radius: 8px;
                 font-size: 12px;
-                border: 1px solid rgba(255,255,255,0.2);
+                font-family: Arial, sans-serif;
+                font-weight: bold;
+                border: 1px solid rgba(0,0,0,0.1);
+                box-shadow: 0 4px 16px rgba(0,0,0,0.1);
                 display: none;
             `;
             document.body.appendChild(statusDiv);
@@ -592,27 +606,30 @@ class Visualizer:
         
         return fig.to_html(include_plotlyjs=True, full_html=False) + js_code
     
-    def _force_directed_layout(self, adjacency_matrix, n_iterations=100):
-        """Generate force-directed layout positions for nodes."""
+    def _force_directed_layout(self, adjacency_matrix, n_iterations=150):
+        """Generate force-directed layout positions for nodes with enhanced spacing."""
         import numpy as np
         
         n_nodes = len(adjacency_matrix)
         
-        # Initialize random positions
-        positions = np.random.rand(n_nodes, 2) * 400 - 200
+        # Initialize random positions with larger spread
+        positions = np.random.rand(n_nodes, 2) * 800 - 400
         
-        # Force-directed layout simulation
+        # Force-directed layout simulation with enhanced parameters
         for iteration in range(n_iterations):
             forces = np.zeros((n_nodes, 2))
             
-            # Repulsive forces between all nodes
+            # Enhanced repulsive forces between all nodes
             for i in range(n_nodes):
                 for j in range(i + 1, n_nodes):
                     diff = positions[i] - positions[j]
                     distance = np.linalg.norm(diff)
                     if distance > 0:
-                        # Repulsive force (inverse square law)
-                        force_magnitude = 1000 / (distance ** 2)
+                        # Stronger repulsive force for better spacing
+                        force_magnitude = 2000 / (distance ** 2)
+                        # Add minimum distance constraint
+                        if distance < 50:  # Minimum distance between nodes
+                            force_magnitude += 500 / distance
                         force = force_magnitude * diff / distance
                         forces[i] += force
                         forces[j] -= force
@@ -624,17 +641,18 @@ class Visualizer:
                         diff = positions[j] - positions[i]
                         distance = np.linalg.norm(diff)
                         if distance > 0:
-                            # Attractive force proportional to edge weight
-                            force_magnitude = 0.1 * adjacency_matrix[i][j] * distance
+                            # Balanced attractive force
+                            force_magnitude = 0.05 * adjacency_matrix[i][j] * distance
                             force = force_magnitude * diff / distance
                             forces[i] += force
                             forces[j] -= force
             
-            # Update positions
-            positions += forces * 0.1
+            # Update positions with adaptive step size
+            step_size = 0.15 if iteration < 50 else 0.1  # Faster initial convergence
+            positions += forces * step_size
             
-            # Keep nodes within bounds
-            positions = np.clip(positions, -300, 300)
+            # Keep nodes within larger bounds
+            positions = np.clip(positions, -500, 500)
         
         return positions
     
