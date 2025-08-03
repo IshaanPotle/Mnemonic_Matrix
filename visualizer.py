@@ -53,606 +53,447 @@ class Visualizer:
         return visualizations
     
     def _create_tag_network(self, papers: List[Dict]) -> str:
-        """Create an interactive tag network visualization with force-directed layout and clustering."""
-        # Collect all tags and their frequencies
+        """Create a simple HTML-based tag network visualization."""
+        # Collect all matrix tags and their frequencies
         tag_counts = {}
-        paper_tag_connections = []
+        tag_metadata = {}
         
+        # Define matrix tag categories with colors
+        matrix_categories = {
+            'time': {
+                'name': '⏰ Time Periods',
+                'tags': ['T1', 'T2', 'T3', 'T4', 'T5'],
+                'color': '#FF6B9D'
+            },
+            'discipline': {
+                'name': '🎓 Academic Disciplines', 
+                'tags': ['DSOC', 'DHIS', 'DSPY', 'DNEU', 'DPOL', 'DANT', 'DGEO', 
+                         'DARC', 'DLIT', 'DCUL', 'DLAW', 'DPHI', 'DPSY', 'DMED', 
+                         'DEDU', 'DHUM', 'DSS', 'DMU', 'DHE', 'DAR'],
+                'color': '#4ECDC4'
+            },
+            'memory_carrier': {
+                'name': '🏛️ Memory Carriers',
+                'tags': ['MCSO', 'MCLI', 'MCFI', 'MCT', 'MCAR', 'MCPH', 'MCC', 
+                         'MCMO', 'MCA', 'MCB', 'MCME', 'MCLA', 'MCED', 'MCMU', 
+                         'MCF', 'MCT', 'MCNAT'],
+                'color': '#45B7D1'
+            },
+            'concept_tags': {
+                'name': '🧠 Memory Concepts',
+                'tags': ['CTArchives', 'CTAutobiographicalMemory', 'CTAgonisticMemory', 'CTAmnesia', 'CTAestheticMemory',
+                         'CTBanalMnemonics', 'CTCanons', 'CTCommunicativeMemory', 'CTCulturalTrauma', 'CTCollectiveMemory', 
+                         'CTCulturalMemory', 'CTCosmopolitanMemory', 'CTCommemoration', 'CTCatastrophicMemory', 'CTCounterMemory',
+                         'CTDialogical', 'CTDeclarativeMemory', 'CTDigitalMemory', 'CTDutyToRemember', 'CTEngrams', 
+                         'CTEpisodicMemory', 'CTExplicitMemory', 'CTEntangledMemory', 'CTFamilyMemory', 'CTFlashbulbMemory', 
+                         'CTFlashback', 'CTForgetting', 'CTForgettingCurve', 'CTFalseMemory', 'CTGenreMemory', 'CTGlobitalMemory', 
+                         'CTGlobalMemory', 'CTGenerationalMemory', 'CTHeritage', 'CTHistoricalMemory', 'CTHyperthymesia',
+                         'CTIdentity', 'CTImplicitMemory', 'CTIntergenerationalTransmissions', 'CTIconicMemory', 'CTImaginativeReconstruction',
+                         'CTLongueDuree', 'CTMultidirectionalMemory', 'CTMnemonicSecurity', 'CTMilieuDeMemoire', 'CTMemoryLaws', 
+                         'CTMnemohistory', 'CTMemoryConsolidation', 'CTMemoryRetrieval', 'CTMemoryEncoding', 'CTMemoryStorage', 
+                         'CTMemoryTrace', 'CTMemorySpan', 'CTMemoryDistortion', 'CTMemoryAccuracy', 'CTMemoryBias', 'CTMemoryEnhancement',
+                         'CTMemorySuppression', 'CTMemorySchemas', 'CTMnemonics', 'CTMemoryPolitics', 'CTMnemonicCommunities',
+                         'CTMnemonicSocialization', 'CTMemoryEthics', 'CTMemoryPractices', 'CTMnemonicStandoff', 'CTNationalMemory', 
+                         'CTNonContemporaneity', 'CTOfficialMemory', 'CTParticularism', 'CTPrivateMemory', 'CTPublicMemory', 
+                         'CTPathDependency', 'CTProceduralMemory', 'CTProstheticMemory', 'CTPostColonialMemory', 'CTProspectiveMemory', 
+                         'CTProfaneMemory', 'CTPostMemory', 'CTRealmsOfMemory', 'CTRegret', 'CTRestitution', 'CTReparations', 
+                         'CTRedress', 'CTRepressedMemory', 'CTRecoveredMemory', 'CTRetrospectiveMemory', 'CTRevisionistMemory', 
+                         'CTReligiousMemory', 'CTSemanticMemory', 'CTSocialFrameworks', 'CTSlowMemory', 'CTSocialMemory', 
+                         'CTScreenMemory', 'CTSensoryMemory', 'CTSourceMemory', 'CTSacredMemory', 'CTTrauma', 'CTTradition', 
+                         'CTTravellingMemory', 'CTTransnationalMemory', 'CTTransculturalMemory', 'CTTransoceanicMemory', 
+                         'CTUniversalism', 'CTVernacularMemory', 'CTWorkingMemory'],
+                'color': '#F7DC6F'
+            }
+        }
+        
+        # Collect tag data
         for paper in papers:
-            paper_id = paper.get('id', 'unknown')
-            paper_title = paper.get('title', 'Unknown Title')
-            
             for tag in paper.get('tags', []):
                 if tag not in tag_counts:
                     tag_counts[tag] = 0
+                    # Find which category this tag belongs to
+                    tag_category = None
+                    for cat_name, cat_info in matrix_categories.items():
+                        if tag in cat_info['tags']:
+                            tag_category = cat_name
+                            break
+                    
+                    tag_metadata[tag] = {
+                        'category': tag_category,
+                        'category_name': matrix_categories.get(tag_category, {}).get('name', 'Unknown'),
+                        'category_color': matrix_categories.get(tag_category, {}).get('color', '#95a5a6')
+                    }
+                
                 tag_counts[tag] += 1
-                paper_tag_connections.append((paper_id, tag, paper_title))
         
-        # Filter tags by frequency to reduce clutter
-        min_frequency = 1
-        max_frequency = max(tag_counts.values()) if tag_counts else 1
-        
-        # Keep only tags that appear at least once, but limit to top tags for readability
-        filtered_tags = {tag: count for tag, count in tag_counts.items() if count >= min_frequency}
-        
-        # Sort by frequency and take top tags for better visualization
+        # Show ALL matrix tags that appear in papers (no artificial limit)
+        filtered_tags = {tag: count for tag, count in tag_counts.items() if count >= 1}
         sorted_tags = sorted(filtered_tags.items(), key=lambda x: x[1], reverse=True)
-        top_tags = sorted_tags[:40]  # Increased limit for better coverage
+        all_used_tags = sorted_tags  # Show all tags, not just top 20
         
-        if not top_tags:
-            return "<p>No tags found in the papers.</p>"
+        # Also get all possible matrix tags for completeness analysis
+        all_possible_tags = set()
+        for cat_info in matrix_categories.values():
+            all_possible_tags.update(cat_info['tags'])
         
-        # Create nodes for tags with enhanced properties
-        tag_nodes = []
-        tag_to_index = {}
+        # Find missing tags (tags in matrix but not in papers)
+        used_tag_set = set(tag_counts.keys())
+        missing_tags = all_possible_tags - used_tag_set
         
-        for i, (tag, count) in enumerate(top_tags):
-            # Calculate node size based on frequency with better scaling
-            size = 12 + (count / max_frequency) * 35  # Larger base size and range
-            
-            # Calculate color based on frequency with modern color scheme
-            color_value = count / max_frequency
-            # Use a modern, vibrant color scheme for light theme
-            if color_value > 0.7:
-                color = '#e74c3c'  # Red for high frequency
-            elif color_value > 0.4:
-                color = '#3498db'  # Blue for medium frequency
-            elif color_value > 0.2:
-                color = '#2ecc71'  # Green for lower frequency
-            else:
-                color = '#f39c12'  # Orange for lowest frequency
-            
-            tag_nodes.append({
-                'id': tag,
-                'label': tag,
-                'size': size,
-                'color': color,
-                'frequency': count,
-                'index': i
-            })
-            tag_to_index[tag] = i
+        if not all_used_tags:
+            return "<p style='color: #E8E8E8; font-family: Arial, sans-serif; text-align: center; padding: 20px;'>No matrix tags found in the papers.</p>"
         
-        # Create edges between tags that co-occur in the same papers
-        edges = []
-        tag_cooccurrence = {}
+        node_count = len(all_used_tags)
         
-        for paper in papers:
-            paper_tags = paper.get('tags', [])
-            # Only consider tags that are in our filtered list
-            paper_tags = [tag for tag in paper_tags if tag in dict(top_tags)]
-            
-            # Create connections between all tags in this paper
-            for i, tag1 in enumerate(paper_tags):
-                for tag2 in paper_tags[i+1:]:
-                    edge_key = tuple(sorted([tag1, tag2]))
-                    if edge_key not in tag_cooccurrence:
-                        tag_cooccurrence[edge_key] = 0
-                    tag_cooccurrence[edge_key] += 1
+        # Create simple HTML visualization
+        html_parts = []
+        html_parts.append(f"""
+        <div style="background-color: #1A1A1A; padding: 20px; border-radius: 10px; color: #E8E8E8;">
+            <h3 style="text-align: center; color: #FF6B9D; margin-bottom: 20px;">🌟 Memory Studies Knowledge Network ({node_count} nodes)</h3>
+        """)
         
-        # Create edges with weights based on co-occurrence
-        # Sort by weight and take only the strongest connections to reduce clutter
-        sorted_edges = sorted(tag_cooccurrence.items(), key=lambda x: x[1], reverse=True)
-        max_edges = min(len(sorted_edges), 60)  # Limit number of edges for clarity
+        # Group tags by category
+        categories = {}
+        for tag, count in all_used_tags:
+            metadata = tag_metadata.get(tag, {})
+            category = metadata.get('category', 'unknown')
+            if category not in categories:
+                categories[category] = []
+            categories[category].append((tag, count))
         
-        for (tag1, tag2), weight in sorted_edges[:max_edges]:
-            if weight >= 1:  # Only show edges with at least 1 co-occurrence
-                edges.append({
-                    'source': tag1,
-                    'target': tag2,
-                    'weight': weight,
-                    'width': min(weight * 1.2, 5)  # Reduced width cap
-                })
+        # Display each category
+        for cat_name, cat_info in matrix_categories.items():
+            if cat_name in categories:
+                html_parts.append(f"""
+                <div style="margin-bottom: 20px; padding: 15px; background-color: rgba(255,255,255,0.05); border-radius: 8px; border-left: 4px solid {cat_info['color']};">
+                    <h4 style="color: {cat_info['color']}; margin-bottom: 10px;">{cat_info['name']}</h4>
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                """)
+                
+                for tag, count in categories[cat_name]:
+                    size = 12 + (count / max(tag_counts.values())) * 8  # 12-20px font size
+                    html_parts.append(f"""
+                    <span style="
+                        background-color: {cat_info['color']};
+                        color: white;
+                        padding: 5px 10px;
+                        border-radius: 15px;
+                        font-size: {size}px;
+                        font-weight: bold;
+                        display: inline-block;
+                        margin: 2px;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                    " title="Frequency: {count} papers">
+                        {tag} ({count})
+                    </span>
+                    """)
+                
+                html_parts.append("</div></div>")
         
-        # Generate force-directed layout positions
+        html_parts.append("</div>")
+        
+        # Create interactive Plotly network graph
+        import plotly.graph_objects as go
         import numpy as np
-        from scipy.spatial.distance import pdist, squareform
         
-        # Create adjacency matrix for layout calculation
-        n_nodes = len(tag_nodes)
-        adjacency_matrix = np.zeros((n_nodes, n_nodes))
+        # Create nodes for the graph
+        node_labels = []
+        node_sizes = []
+        node_colors = []
+        node_positions = []
         
-        for edge in edges:
-            source_idx = tag_to_index[edge['source']]
-            target_idx = tag_to_index[edge['target']]
-            adjacency_matrix[source_idx][target_idx] = edge['weight']
-            adjacency_matrix[target_idx][source_idx] = edge['weight']
+        # Calculate node positions in a circle layout
+        for i, (tag, count) in enumerate(all_used_tags):
+            node_labels.append(tag)
+            
+            # Smart node sizing: consider both frequency and importance
+            base_size = 20 + count * 5  # Base size from frequency
+            
+            # Boost size for rare but important tags (appear in 1-2 papers)
+            if count <= 2:
+                base_size += 10  # Make rare tags more visible
+            
+            node_sizes.append(base_size)
+            
+            # Get category color
+            metadata = tag_metadata.get(tag, {})
+            category = metadata.get('category', 'unknown')
+            color = matrix_categories.get(category, {}).get('color', '#95a5a6')
+            node_colors.append(color)
+            
+            # Position nodes in a circle
+            angle = 2 * np.pi * i / len(all_used_tags)
+            radius = 100
+            x = radius * np.cos(angle)
+            y = radius * np.sin(angle)
+            node_positions.append([x, y])
         
-        # Enhanced force-directed layout simulation with better spacing
-        positions = self._force_directed_layout(adjacency_matrix, n_iterations=150)
+        # Create edges based on co-occurrence
+        edges = []
+        edge_weights = []
         
-        # Create the network visualization with enhanced features
+        for i, (tag1, count1) in enumerate(all_used_tags):
+            for j, (tag2, count2) in enumerate(all_used_tags[i+1:], i+1):
+                # Check if tags appear together in papers
+                co_occurrence = 0
+                for paper in papers:
+                    paper_tags = paper.get('tags', [])
+                    if tag1 in paper_tags and tag2 in paper_tags:
+                        co_occurrence += 1
+                
+                if co_occurrence > 0:
+                    edges.append([i, j])
+                    edge_weights.append(co_occurrence)
+        
+        # Create the network graph
         fig = go.Figure()
         
-        # Add edges with animated effects and better styling
+        # Add edges
         if edges:
-            for edge in edges:
-                source_idx = tag_to_index[edge['source']]
-                target_idx = tag_to_index[edge['target']]
+            edge_x = []
+            edge_y = []
+            edge_hover_texts = []
+            
+            for edge, weight in zip(edges, edge_weights):
+                x0, y0 = node_positions[edge[0]]
+                x1, y1 = node_positions[edge[1]]
+                edge_x.extend([x0, x1, None])
+                edge_y.extend([y0, y1, None])
                 
-                source_pos = positions[source_idx]
-                target_pos = positions[target_idx]
+                # Create detailed hover text for edge
+                tag1 = node_labels[edge[0]]
+                tag2 = node_labels[edge[1]]
                 
-                # Create animated edge trace for this connection
-                fig.add_trace(go.Scatter(
-                    x=[source_pos[0], target_pos[0]],
-                    y=[source_pos[1], target_pos[1]],
-                    mode='lines',
-                                    line=dict(
-                    width=min(edge['width'] * 0.8, 4),  # Slightly thicker edges
-                    color='rgba(52,73,94,0.4)',  # Dark blue-gray for light theme
-                    shape='spline'
-                ),
-                    hoverinfo='text',
-                    text=[f"<b>{edge['source']} ↔ {edge['target']}</b><br>Co-occurrence: {edge['weight']} papers"],
-                    showlegend=False,
-                    hoverlabel=dict(
-                        bgcolor="rgba(255,255,255,0.95)", 
-                        font_size=12, 
-                        bordercolor="rgba(0,0,0,0.2)",
-                        font_color="#2c3e50"
-                    ),
-                    name='Connections'
-                ))
+                # Find papers that contain both tags
+                papers_with_both_tags = []
+                for paper in papers:
+                    paper_tags = paper.get('tags', [])
+                    if tag1 in paper_tags and tag2 in paper_tags:
+                        title = paper.get('title', 'Unknown Title')
+                        authors = ', '.join(paper.get('authors', []))[:40] + '...' if len(', '.join(paper.get('authors', []))) > 40 else ', '.join(paper.get('authors', []))
+                        year = paper.get('year', 'Unknown')
+                        papers_with_both_tags.append(f"• {title} ({year})")
+                
+                # Create detailed edge hover text
+                edge_hover_text = f"""
+                <b>{tag1} ↔ {tag2}</b><br>
+                <b>Co-occurrence:</b> {weight} papers<br>
+                <b>Papers with both tags:</b><br>
+                {chr(10).join(papers_with_both_tags[:2])}
+                """
+                if len(papers_with_both_tags) > 2:
+                    edge_hover_text += f"<br>... and {len(papers_with_both_tags) - 2} more"
+                
+                edge_hover_texts.extend([edge_hover_text, "", ""])
+            
+            fig.add_trace(go.Scatter(
+                x=edge_x, y=edge_y,
+                line=dict(width=1, color='#888'),
+                hoverinfo='text',
+                hovertext=edge_hover_texts,
+                mode='lines'))
         
-        # Add nodes with enhanced interactive features
-        node_x = [positions[i][0] for i in range(n_nodes)]
-        node_y = [positions[i][1] for i in range(n_nodes)]
-        node_sizes = [node['size'] for node in tag_nodes]
-        node_colors = [node['color'] for node in tag_nodes]
-        node_labels = [node['label'] for node in tag_nodes]
-        node_frequencies = [node['frequency'] for node in tag_nodes]
+        # Add nodes
+        node_x = [pos[0] for pos in node_positions]
+        node_y = [pos[1] for pos in node_positions]
         
-        # Create hover text with more information
+        # Create comprehensive hover text with detailed information
         hover_texts = []
-        for node in tag_nodes:
-            # Find connected tags
-            connected_tags = []
-            for edge in edges:
-                if edge['source'] == node['id']:
-                    connected_tags.append(edge['target'])
-                elif edge['target'] == node['id']:
-                    connected_tags.append(edge['source'])
+        for i, (tag, count) in enumerate(all_used_tags):
+            metadata = tag_metadata.get(tag, {})
+            category_name = metadata.get('category_name', 'Unknown')
             
-            connected_text = f"<br>Connected to: {', '.join(connected_tags[:5])}"
-            if len(connected_tags) > 5:
-                connected_text += f" (+{len(connected_tags)-5} more)"
+            # Find papers that contain this tag
+            papers_with_tag = []
+            for paper in papers:
+                if tag in paper.get('tags', []):
+                    title = paper.get('title', 'Unknown Title')
+                    authors = ', '.join(paper.get('authors', []))[:50] + '...' if len(', '.join(paper.get('authors', []))) > 50 else ', '.join(paper.get('authors', []))
+                    year = paper.get('year', 'Unknown')
+                    papers_with_tag.append(f"• {title} ({year}) by {authors}")
             
-            hover_texts.append(
-                f"<b>{node['label']}</b><br>"
-                f"Frequency: {node['frequency']} papers<br>"
-                f"Connections: {len(connected_tags)} tags{connected_text}"
-            )
+            # Create detailed hover text
+            hover_text = f"""
+            <b>{tag}</b><br>
+            <b>Category:</b> {category_name}<br>
+            <b>Frequency:</b> {count} papers<br>
+            <b>Papers:</b><br>
+            {chr(10).join(papers_with_tag[:3])}
+            """
+            if len(papers_with_tag) > 3:
+                hover_text += f"<br>... and {len(papers_with_tag) - 3} more papers"
+            
+            hover_texts.append(hover_text)
         
         fig.add_trace(go.Scatter(
-            x=node_x,
-            y=node_y,
+            x=node_x, y=node_y,
             mode='markers+text',
+            hoverinfo='text',
+            text=node_labels,
+            textposition="middle center",
+            hovertext=hover_texts,
             marker=dict(
                 size=node_sizes,
                 color=node_colors,
-                line=dict(width=2, color='rgba(255,255,255,0.9)'),
-                opacity=0.95,
-                symbol='circle',
-                gradient=dict(
-                    type="radial",
-                    color=node_colors
-                )
+                line=dict(width=2, color='white')
             ),
-            text=node_labels,
-            textposition="middle center",
-            textfont=dict(size=11, color='white', family='Arial Black'),
-            hoverinfo='text',
-            hovertext=hover_texts,
-            name='Tags',
-            customdata=node_labels,  # Store tag names for click events
-            hovertemplate='%{hovertext}<extra></extra>'
+            textfont=dict(size=10, color='white')
         ))
         
-        # Add frequency legend with modern color scheme
-        legend_items = [
-            ('High Frequency (>70%)', '#e74c3c'),
-            ('Medium Frequency (40-70%)', '#3498db'),
-            ('Low Frequency (20-40%)', '#2ecc71'),
-            ('Very Low Frequency (<20%)', '#f39c12')
-        ]
+        # Create legend for categories with completeness info
+        legend_items = []
+        for cat_name, cat_info in matrix_categories.items():
+            if cat_name in categories:
+                # Calculate category completeness
+                category_tags = set(cat_info['tags'])
+                used_category_tags = category_tags.intersection(used_tag_set)
+                completeness = len(used_category_tags) / len(category_tags) * 100
+                
+                legend_items.append(
+                    go.Scatter(
+                        x=[None], y=[None],
+                        mode='markers',
+                        marker=dict(size=10, color=cat_info['color']),
+                        name=f"{cat_info['name']} ({len(used_category_tags)}/{len(category_tags)} tags)",
+                        showlegend=True
+                    )
+                )
         
-        for label, color in legend_items:
-            fig.add_trace(go.Scatter(
-                x=[None], y=[None],
-                mode='markers',
-                marker=dict(size=10, color=color),
-                name=label,
-                showlegend=True
-            ))
+        # Add legend traces
+        for item in legend_items:
+            fig.add_trace(item)
         
-        # Update layout for modern light theme and enhanced interactivity
+        # Calculate matrix completeness
+        total_possible_tags = len(all_possible_tags)
+        total_used_tags = len(used_tag_set)
+        matrix_completeness = (total_used_tags / total_possible_tags) * 100 if total_possible_tags > 0 else 0
+        
+        # Update layout
         fig.update_layout(
-            title={
-                'text': '🔗 Interactive Knowledge Network',
-                'x': 0.5,
-                'xanchor': 'center',
-                'font': {'size': 26, 'color': '#2c3e50', 'family': 'Arial Black'}
-            },
-            xaxis=dict(
-                showticklabels=False,
-                showgrid=True,
-                gridcolor='rgba(200,200,200,0.3)',
-                zeroline=False,
-                showline=False,
-                range=[-600, 600]
-            ),
-            yaxis=dict(
-                showticklabels=False,
-                showgrid=True,
-                gridcolor='rgba(200,200,200,0.3)',
-                zeroline=False,
-                showline=False,
-                range=[-600, 600]
-            ),
-            plot_bgcolor='#f8f9fa',
-            paper_bgcolor='#ffffff',
-            margin=dict(l=50, r=50, t=120, b=50),
-            height=900,
+            title=f'🌟 Interactive Memory Studies Knowledge Network ({node_count} nodes, {matrix_completeness:.1f}% matrix coverage)',
             showlegend=True,
+            hovermode='closest',
+            margin=dict(b=20,l=5,r=5,t=40),
+            xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+            yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+            plot_bgcolor='#1A1A1A',
+            paper_bgcolor='#0F0F0F',
+            height=600,
             legend=dict(
                 yanchor="top",
-                y=0.98,
+                y=0.99,
                 xanchor="left",
-                x=0.02,
-                bgcolor='rgba(255,255,255,0.95)',
-                bordercolor='rgba(0,0,0,0.2)',
+                x=0.01,
+                bgcolor='rgba(30,30,30,0.95)',
+                bordercolor='rgba(255,255,255,0.2)',
                 borderwidth=1,
-                font=dict(color='#2c3e50', size=12, family='Arial')
-            ),
-            # Enhanced interactivity
-            clickmode='event+select',
-            dragmode='pan',
-            hovermode='closest',
-            # Animation settings
-            uirevision=True,
-            # Add selection styling
-            selectdirection='any'
+                font=dict(color='#E8E8E8', size=12)
+            )
         )
         
-        # Add JavaScript for enhanced interactive features
-        js_code = """
-        <script>
-        // Enhanced interactive features with dark theme
-        let selectedNode = null;
-        let highlightedEdges = [];
-        
-        function handleNodeClick(event) {
-            const point = event.points[0];
-            const tagName = point.data.customdata[point.pointIndex];
-            
-            // Highlight connected nodes
-            highlightConnections(tagName);
-            
-            // Show detailed relationship information
-            showRelationshipDetails(tagName);
-            
-            // Store selected node
-            selectedNode = tagName;
-        }
-        
-        function highlightConnections(tagName) {
-            // Remove previous highlights
-            clearHighlights();
-            
-            // Find and highlight connected nodes
-            const plotDiv = document.querySelector('.plotly-graph-div');
-            if (plotDiv && plotDiv._fullData) {
-                const data = plotDiv._fullData;
-                const nodeTrace = data.find(trace => trace.name === 'Tags');
-                const edgeTraces = data.filter(trace => trace.name === 'Connections');
-                
-                if (nodeTrace) {
-                    // Highlight connected nodes
-                    const connectedNodes = [];
-                    edgeTraces.forEach(edgeTrace => {
-                        if (edgeTrace.text && edgeTrace.text[0] && edgeTrace.text[0].includes(tagName)) {
-                            // This edge connects to our selected node
-                            const connectedTag = edgeTrace.text[0].split(' ↔ ').find(tag => tag !== tagName);
-                            if (connectedTag) {
-                                connectedNodes.push(connectedTag);
-                            }
-                        }
-                    });
-                    
-                    // Apply highlighting
-                    highlightNodes(connectedNodes);
-                }
-            }
-        }
-        
-        function highlightNodes(nodeNames) {
-            const plotDiv = document.querySelector('.plotly-graph-div');
-            if (plotDiv) {
-                // Add glow effect to connected nodes
-                const style = document.createElement('style');
-                style.id = 'node-highlights';
-                style.textContent = `
-                    .js-plotly-plot .plotly .main-svg .trace:nth-child(2) .points path {
-                        filter: drop-shadow(0 0 10px rgba(255,255,255,0.5));
-                    }
-                `;
-                document.head.appendChild(style);
-            }
-        }
-        
-        function clearHighlights() {
-            const existingStyle = document.getElementById('node-highlights');
-            if (existingStyle) {
-                existingStyle.remove();
-            }
-        }
-        
-        function showRelationshipDetails(tagName) {
-            // Create an enhanced tooltip
-            const tooltip = document.createElement('div');
-            tooltip.innerHTML = `
-                <div style="background: rgba(255,255,255,0.98); color: #2c3e50; padding: 18px; border-radius: 12px; 
-                     border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 8px 32px rgba(0,0,0,0.15); 
-                     max-width: 320px; font-family: Arial, sans-serif; backdrop-filter: blur(10px);">
-                    <h3 style="margin: 0 0 12px 0; color: #3498db; font-size: 18px;">${tagName}</h3>
-                    <p style="margin: 8px 0; font-size: 14px; color: #34495e;">Click to explore connections</p>
-                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.1);">
-                        <small style="color: #7f8c8d;">Connected nodes will be highlighted</small>
-                    </div>
-                </div>
-            `;
-            tooltip.style.cssText = `
-                position: absolute;
-                z-index: 1000;
-                pointer-events: none;
-            `;
-            document.body.appendChild(tooltip);
-            
-            setTimeout(() => {
-                document.body.removeChild(tooltip);
-            }, 4000);
-        }
-        
-        // Add enhanced controls with modern light theme
-        function addNetworkControls() {
-            const controls = document.createElement('div');
-            controls.innerHTML = `
-                <div style="background: rgba(255,255,255,0.95); padding: 15px; border-radius: 12px; 
-                     border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 8px 32px rgba(0,0,0,0.1); 
-                     backdrop-filter: blur(10px);">
-                    <h4 style="margin: 0 0 15px 0; color: #2c3e50; font-size: 16px; font-family: Arial, sans-serif;">🎮 Network Controls</h4>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <button onclick="resetZoom()" style="padding: 10px 14px; background: linear-gradient(45deg, #3498db, #2980b9); 
-                                color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; 
-                                transition: all 0.3s ease;">🔍 Reset</button>
-                        <button onclick="fitToView()" style="padding: 10px 14px; background: linear-gradient(45deg, #27ae60, #229954); 
-                                color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; 
-                                transition: all 0.3s ease;">📐 Fit</button>
-                        <button onclick="refreshNetwork()" style="padding: 10px 14px; background: linear-gradient(45deg, #e74c3c, #c0392b); 
-                                color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; 
-                                transition: all 0.3s ease;">🔄 Refresh</button>
-                        <button onclick="toggleAutoRefresh()" id="autoRefreshBtn" style="padding: 10px 14px; background: linear-gradient(45deg, #f39c12, #e67e22); 
-                                color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; 
-                                transition: all 0.3s ease;">⏰ Auto</button>
-                    </div>
-                    <div style="margin-top: 12px; font-size: 11px; color: #7f8c8d; font-family: Arial, sans-serif;">
-                        <div>⌨️ Ctrl+R: Refresh</div>
-                        <div>⌨️ Ctrl+Z: Reset Zoom</div>
-                        <div>⌨️ Ctrl+F: Fit View</div>
-                    </div>
-                </div>
-            `;
-            controls.style.cssText = `
-                position: absolute;
-                top: 10px;
-                right: 10px;
-                z-index: 1000;
-                font-family: Arial, sans-serif;
-            `;
-            document.body.appendChild(controls);
-            
-            // Add status indicator
-            const statusDiv = document.createElement('div');
-            statusDiv.id = 'refreshStatus';
-            statusDiv.style.cssText = `
-                position: absolute;
-                top: 10px;
-                left: 10px;
-                z-index: 1000;
-                background: rgba(255,255,255,0.95);
-                color: #2c3e50;
-                padding: 10px 16px;
-                border-radius: 8px;
-                font-size: 12px;
-                font-family: Arial, sans-serif;
-                font-weight: bold;
-                border: 1px solid rgba(0,0,0,0.1);
-                box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-                display: none;
-            `;
-            document.body.appendChild(statusDiv);
-        }
-        
-        let autoRefreshInterval = null;
-        let isAutoRefreshEnabled = false;
-        
-        function resetZoom() {
-            const plotDiv = document.querySelector('.plotly-graph-div');
-            if (plotDiv && plotDiv._fullData) {
-                Plotly.relayout(plotDiv, {
-                    'xaxis.range': null,
-                    'yaxis.range': null
-                });
-                showStatus('🔍 Zoom reset');
-            }
-        }
-        
-        function fitToView() {
-            const plotDiv = document.querySelector('.plotly-graph-div');
-            if (plotDiv && plotDiv._fullData) {
-                const xData = plotDiv._fullData[1].x;
-                const yData = plotDiv._fullData[1].y;
-                
-                if (xData && yData && xData.length > 0) {
-                    const xMin = Math.min(...xData);
-                    const xMax = Math.max(...xData);
-                    const yMin = Math.min(...yData);
-                    const yMax = Math.max(...yData);
-                    
-                    const padding = 50;
-                    Plotly.relayout(plotDiv, {
-                        'xaxis.range': [xMin - padding, xMax + padding],
-                        'yaxis.range': [yMin - padding, yMax + padding]
-                    });
-                    showStatus('📐 Fitted to view');
-                }
-            }
-        }
-        
-        function refreshNetwork() {
-            showStatus('🔄 Refreshing network...');
-            
-            const plotDiv = document.querySelector('.plotly-graph-div');
-            if (plotDiv && plotDiv._fullData) {
-                const data = plotDiv._fullData;
-                const nodeTrace = data.find(trace => trace.name === 'Tags');
-                
-                if (nodeTrace) {
-                    const numNodes = nodeTrace.x.length;
-                    const newX = [];
-                    const newY = [];
-                    
-                    for (let i = 0; i < numNodes; i++) {
-                        newX.push((Math.random() - 0.5) * 400);
-                        newY.push((Math.random() - 0.5) * 400);
-                    }
-                    
-                    Plotly.restyle(plotDiv, {
-                        x: [newX],
-                        y: [newY]
-                    }, [1]);
-                    
-                    showStatus('✅ Network refreshed');
-                }
-            }
-        }
-        
-        function toggleAutoRefresh() {
-            const btn = document.getElementById('autoRefreshBtn');
-            
-            if (isAutoRefreshEnabled) {
-                if (autoRefreshInterval) {
-                    clearInterval(autoRefreshInterval);
-                    autoRefreshInterval = null;
-                }
-                isAutoRefreshEnabled = false;
-                btn.style.background = 'linear-gradient(45deg, #f39c12, #e67e22)';
-                btn.textContent = '⏰ Auto';
-                showStatus('⏹️ Auto refresh disabled');
-            } else {
-                autoRefreshInterval = setInterval(() => {
-                    refreshNetwork();
-                }, 8000);
-                isAutoRefreshEnabled = true;
-                btn.style.background = 'linear-gradient(45deg, #e67e22, #d35400)';
-                btn.textContent = '⏹️ Stop';
-                showStatus('▶️ Auto refresh enabled (8s)');
-            }
-        }
-        
-        function showStatus(message) {
-            const statusDiv = document.getElementById('refreshStatus');
-            if (statusDiv) {
-                statusDiv.textContent = message;
-                statusDiv.style.display = 'block';
-                
-                setTimeout(() => {
-                    statusDiv.style.display = 'none';
-                }, 3000);
-            }
-        }
-        
-        // Enhanced keyboard shortcuts
-        document.addEventListener('keydown', function(event) {
-            switch(event.key) {
-                case 'r':
-                case 'R':
-                    if (event.ctrlKey) {
-                        event.preventDefault();
-                        refreshNetwork();
-                    }
-                    break;
-                case 'z':
-                case 'Z':
-                    if (event.ctrlKey) {
-                        event.preventDefault();
-                        resetZoom();
-                    }
-                    break;
-                case 'f':
-                case 'F':
-                    if (event.ctrlKey) {
-                        event.preventDefault();
-                        fitToView();
-                    }
-                    break;
-            }
-        });
-        
-        // Initialize controls when page loads
-        window.addEventListener('load', addNetworkControls);
-        </script>
+        # Create matrix completeness analysis
+        completeness_html = f"""
+        <div style="background-color: #1A1A1A; padding: 15px; border-radius: 8px; margin-top: 20px; color: #E8E8E8;">
+            <h4 style="color: #FF6B9D; margin-bottom: 10px;">📊 Matrix Completeness Analysis</h4>
+            <p><strong>Overall Coverage:</strong> {total_used_tags}/{total_possible_tags} tags ({matrix_completeness:.1f}%)</p>
+            <p><strong>Missing Tags:</strong> {len(missing_tags)} tags not represented in your corpus</p>
         """
         
-        return fig.to_html(include_plotlyjs=True, full_html=False) + js_code
+        # Show category-wise completeness
+        for cat_name, cat_info in matrix_categories.items():
+            category_tags = set(cat_info['tags'])
+            used_category_tags = category_tags.intersection(used_tag_set)
+            category_completeness = len(used_category_tags) / len(category_tags) * 100
+            
+            completeness_html += f"""
+            <div style="margin: 5px 0; padding: 5px; background-color: rgba(255,255,255,0.05); border-radius: 5px;">
+                <span style="color: {cat_info['color']};">{cat_info['name']}:</span> {len(used_category_tags)}/{len(category_tags)} tags ({category_completeness:.1f}%)
+            </div>
+            """
+        
+        completeness_html += "</div>"
+        
+        # Combine the interactive graph with completeness analysis
+        full_html = fig.to_html(include_plotlyjs=True, full_html=False) + completeness_html
+        
+        return full_html
     
-    def _force_directed_layout(self, adjacency_matrix, n_iterations=150):
-        """Generate force-directed layout positions for nodes with enhanced spacing."""
+    def _force_directed_layout(self, adjacency_matrix, n_iterations=250):
+        """Generate force-directed layout positions for nodes with enhanced spacing and collision detection."""
         import numpy as np
         
         n_nodes = len(adjacency_matrix)
         
-        # Initialize random positions with larger spread
-        positions = np.random.rand(n_nodes, 2) * 800 - 400
+        # Initialize positions in a more controlled way to ensure visibility
+        positions = np.random.rand(n_nodes, 2) * 400 - 200  # Larger spread for better visibility
         
-        # Force-directed layout simulation with enhanced parameters
+        # Enhanced force-directed layout simulation with compact parameters
         for iteration in range(n_iterations):
             forces = np.zeros((n_nodes, 2))
             
-            # Enhanced repulsive forces between all nodes
+            # Enhanced repulsive forces between all nodes with collision detection
             for i in range(n_nodes):
                 for j in range(i + 1, n_nodes):
                     diff = positions[i] - positions[j]
                     distance = np.linalg.norm(diff)
+                    
                     if distance > 0:
-                        # Stronger repulsive force for better spacing
-                        force_magnitude = 2000 / (distance ** 2)
-                        # Add minimum distance constraint
-                        if distance < 50:  # Minimum distance between nodes
-                            force_magnitude += 500 / distance
+                        # Repulsive force for better spacing
+                        min_distance = 150  # Larger minimum distance for better visibility
+                        
+                        if distance < min_distance:
+                            # Strong repulsion when nodes are too close
+                            force_magnitude = 12000 / (distance ** 2) + 800 / distance
+                        else:
+                            # Normal repulsion
+                            force_magnitude = 6000 / (distance ** 2)
+                        
                         force = force_magnitude * diff / distance
                         forces[i] += force
                         forces[j] -= force
             
-            # Attractive forces for connected nodes
+            # Attractive forces for connected nodes with distance-based scaling
             for i in range(n_nodes):
                 for j in range(n_nodes):
                     if adjacency_matrix[i][j] > 0:
                         diff = positions[j] - positions[i]
                         distance = np.linalg.norm(diff)
+                        
                         if distance > 0:
-                            # Balanced attractive force
-                            force_magnitude = 0.05 * adjacency_matrix[i][j] * distance
+                            # Distance-based attractive force
+                            ideal_distance = 200  # Larger ideal distance for better visibility
+                            if distance > ideal_distance:
+                                # Pull nodes closer if they're too far
+                                force_magnitude = 0.4 * adjacency_matrix[i][j] * (distance - ideal_distance)
+                            else:
+                                # Push nodes apart if they're too close
+                                force_magnitude = 0.2 * adjacency_matrix[i][j] * (ideal_distance - distance)
+                            
                             force = force_magnitude * diff / distance
                             forces[i] += force
                             forces[j] -= force
             
+            # Boundary forces to keep nodes within larger, visible bounds
+            boundary_force = 500  # Strong boundary force for better layout
+            for i in range(n_nodes):
+                # X-axis boundary
+                if positions[i][0] < -300:
+                    forces[i][0] += boundary_force
+                elif positions[i][0] > 300:
+                    forces[i][0] -= boundary_force
+                
+                # Y-axis boundary
+                if positions[i][1] < -300:
+                    forces[i][1] += boundary_force
+                elif positions[i][1] > 300:
+                    forces[i][1] -= boundary_force
+            
             # Update positions with adaptive step size
-            step_size = 0.15 if iteration < 50 else 0.1  # Faster initial convergence
+            step_size = 0.3 if iteration < 150 else 0.15  # Faster convergence for compact layout
             positions += forces * step_size
             
-            # Keep nodes within larger bounds
-            positions = np.clip(positions, -500, 500)
+            # Keep nodes within larger, visible bounds
+            positions = np.clip(positions, -300, 300)
         
         return positions
     
@@ -705,20 +546,26 @@ class Visualizer:
                 'text': 'Tag Distribution - Most Common Tags',
                 'x': 0.5,
                 'xanchor': 'center',
-                'font': {'size': 18}
+                'font': {'size': 18, 'color': '#E8E8E8'}
             },
             xaxis=dict(
-                title='Tags',
+                title=dict(text='Tags', font=dict(color='#E8E8E8')),
                 tickangle=45,
-                tickfont=dict(size=10)
+                tickfont=dict(size=10, color='#E8E8E8'),
+                gridcolor='rgba(255,255,255,0.1)',
+                zerolinecolor='rgba(255,255,255,0.2)',
+                tickcolor='#E8E8E8'
             ),
             yaxis=dict(
-                title='Frequency',
+                title=dict(text='Frequency', font=dict(color='#E8E8E8')),
                 showgrid=True,
-                gridcolor='lightgray'
+                gridcolor='rgba(255,255,255,0.1)',
+                tickfont=dict(color='#E8E8E8'),
+                zerolinecolor='rgba(255,255,255,0.2)',
+                tickcolor='#E8E8E8'
             ),
-            plot_bgcolor='white',
-            paper_bgcolor='white',
+            plot_bgcolor='#1A1A1A',
+            paper_bgcolor='#0F0F0F',
             margin=dict(l=50, r=50, t=80, b=100),
             height=500,
             showlegend=False
@@ -802,20 +649,26 @@ class Visualizer:
                 'text': 'Paper Timeline - Click on papers to see details',
                 'x': 0.5,
                 'xanchor': 'center',
-                'font': {'size': 18}
+                'font': {'size': 18, 'color': '#E8E8E8'}
             },
             xaxis=dict(
-                title='Publication Year',
+                title=dict(text='Publication Year', font=dict(color='#E8E8E8')),
                 showgrid=True,
-                gridcolor='lightgray'
+                gridcolor='rgba(255,255,255,0.1)',
+                tickfont=dict(color='#E8E8E8'),
+                zerolinecolor='rgba(255,255,255,0.2)',
+                tickcolor='#E8E8E8'
             ),
             yaxis=dict(
-                title='Number of Papers',
+                title=dict(text='Number of Papers', font=dict(color='#E8E8E8')),
                 showgrid=True,
-                gridcolor='lightgray'
+                gridcolor='rgba(255,255,255,0.1)',
+                tickfont=dict(color='#E8E8E8'),
+                zerolinecolor='rgba(255,255,255,0.2)',
+                tickcolor='#E8E8E8'
             ),
-            plot_bgcolor='white',
-            paper_bgcolor='white',
+            plot_bgcolor='#1A1A1A',
+            paper_bgcolor='#0F0F0F',
             margin=dict(l=50, r=50, t=80, b=50),
             height=500,
             showlegend=True,
@@ -823,7 +676,11 @@ class Visualizer:
                 yanchor="top",
                 y=0.99,
                 xanchor="left",
-                x=0.01
+                x=0.01,
+                bgcolor='rgba(30,30,30,0.95)',
+                bordercolor='rgba(255,255,255,0.2)',
+                borderwidth=1,
+                font=dict(color='#E8E8E8', size=12)
             ),
             # Add click event handling
             clickmode='event+select',
@@ -870,14 +727,20 @@ class Visualizer:
         <head>
             <title>Paper Analysis Dashboard</title>
             <style>
-                body {{ font-family: Arial, sans-serif; margin: 20px; }}
-                .header {{ background-color: #f0f0f0; padding: 20px; border-radius: 10px; margin-bottom: 20px; }}
+                body {{ font-family: Arial, sans-serif; margin: 20px; background-color: #0F0F0F; color: #E8E8E8; }}
+                .header {{ background-color: #1A1A1A; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #444444; }}
+                .header h1 {{ color: #64B5F6; text-shadow: 0 0 10px rgba(100, 181, 246, 0.3); }}
+                .header p {{ color: #B0B0B0; }}
                 .stats {{ display: flex; justify-content: space-around; margin: 20px 0; }}
-                .stat-box {{ background-color: #e8f4fd; padding: 15px; border-radius: 8px; text-align: center; }}
+                .stat-box {{ background-color: #1A1A1A; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #444444; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); }}
+                .stat-box h3 {{ color: #64B5F6; }}
+                .stat-box h2 {{ color: #E8E8E8; }}
                 .papers-table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
-                .papers-table th, .papers-table td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
-                .papers-table th {{ background-color: #f2f2f2; }}
-                .tag {{ background-color: #007bff; color: white; padding: 2px 6px; border-radius: 3px; margin: 1px; display: inline-block; font-size: 12px; }}
+                .papers-table th, .papers-table td {{ border: 1px solid #444444; padding: 8px; text-align: left; }}
+                .papers-table th {{ background-color: #1A1A1A; color: #64B5F6; }}
+                .papers-table td {{ background-color: #1A1A1A; color: #E8E8E8; }}
+                .tag {{ background: linear-gradient(135deg, #64B5F6, #1976D2); color: white; padding: 2px 6px; border-radius: 3px; margin: 1px; display: inline-block; font-size: 12px; box-shadow: 0 2px 4px rgba(100, 181, 246, 0.3); }}
+                h2 {{ color: #64B5F6; }}
             </style>
         </head>
         <body>

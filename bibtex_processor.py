@@ -41,6 +41,16 @@ class BibTeXProcessor:
         
         return papers
     
+    def process_bibtex(self, content: str) -> List[Dict]:
+        """Process BibTeX content string and extract paper information."""
+        if not content or not content.strip():
+            return []
+        
+        # Use standard format parser since the content uses @article{key, format
+        papers = self._parse_standard_format(content)
+        
+        return papers
+    
     def _parse_specific_format(self, content: str) -> List[Dict]:
         """Parse the specific format used in training_papers.bib."""
         papers = []
@@ -232,6 +242,17 @@ class BibTeXProcessor:
     def _parse_authors(self, authors_str: str) -> List[str]:
         """Parse author string into list of authors."""
         if not authors_str:
+            return []
+        
+        # Ensure authors_str is a string
+        if not isinstance(authors_str, str):
+            print(f"Warning: authors_str is not a string: {type(authors_str)} - {authors_str}")
+            # If it's a list, return it as is
+            if isinstance(authors_str, list):
+                return authors_str
+            # If it's a dict, try to extract values
+            if isinstance(authors_str, dict):
+                return list(authors_str.values())
             return []
         
         # Split by 'and' or '&'
