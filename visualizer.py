@@ -196,22 +196,34 @@ class Visualizer:
         import plotly.graph_objects as go
         import numpy as np
         
-        # Create nodes for the graph
+        # Calculate node positions using force-directed layout
         node_labels = []
         node_sizes = []
         node_colors = []
-        node_positions = []
         
-        # Calculate node positions in a circle layout
         for i, (tag, count) in enumerate(all_used_tags):
             node_labels.append(tag)
             
-            # Smart node sizing: consider both frequency and importance
-            base_size = 20 + count * 5  # Base size from frequency
+            # Enhanced node sizing: more dramatic size differences
+            max_count = max(tag_counts.values())
+            min_count = min(tag_counts.values())
+            
+            # Dynamic size calculation with better scaling
+            if max_count == min_count:
+                # All tags have same frequency
+                base_size = 25
+            else:
+                # Normalized size with minimum and maximum bounds
+                normalized_size = (count - min_count) / (max_count - min_count)
+                base_size = 15 + (normalized_size * 35)  # Range: 15-50px
             
             # Boost size for rare but important tags (appear in 1-2 papers)
             if count <= 2:
-                base_size += 10  # Make rare tags more visible
+                base_size += 15  # Make rare tags more visible
+            
+            # Additional size boost for high-frequency tags
+            if count >= max_count * 0.8:  # Top 20% frequency
+                base_size += 10
             
             node_sizes.append(base_size)
             
@@ -220,13 +232,6 @@ class Visualizer:
             category = metadata.get('category', 'unknown')
             color = matrix_categories.get(category, {}).get('color', '#95a5a6')
             node_colors.append(color)
-            
-            # Position nodes in a circle
-            angle = 2 * np.pi * i / len(all_used_tags)
-            radius = 100
-            x = radius * np.cos(angle)
-            y = radius * np.sin(angle)
-            node_positions.append([x, y])
         
         # Create edges based on co-occurrence
         edges = []
@@ -245,20 +250,57 @@ class Visualizer:
                     edges.append([i, j])
                     edge_weights.append(co_occurrence)
         
+        # Calculate edge thickness based on co-occurrence strength
+        max_edge_weight = max(edge_weights) if edge_weights else 1
+        min_edge_weight = min(edge_weights) if edge_weights else 1
+        
+        # Create adjacency matrix for force-directed layout
+        n_nodes = len(all_used_tags)
+        adjacency_matrix = np.zeros((n_nodes, n_nodes))
+        
+        for edge, weight in zip(edges, edge_weights):
+            i, j = edge
+            # Normalize edge weight for layout
+            normalized_weight = (weight - min_edge_weight) / (max_edge_weight - min_edge_weight) if max_edge_weight != min_edge_weight else 0.5
+            adjacency_matrix[i][j] = normalized_weight
+            adjacency_matrix[j][i] = normalized_weight
+        
+        # Use force-directed layout for better positioning
+        if n_nodes > 1:
+            node_positions = self._force_directed_layout(adjacency_matrix, n_iterations=300)
+        else:
+            # Single node case
+            node_positions = [[0, 0]]
+        
         # Create the network graph
         fig = go.Figure()
         
-        # Add edges
+        # Add edges with dynamic thickness
         if edges:
             edge_x = []
             edge_y = []
             edge_hover_texts = []
+            edge_widths = []
+            edge_opacities = []
             
             for edge, weight in zip(edges, edge_weights):
                 x0, y0 = node_positions[edge[0]]
                 x1, y1 = node_positions[edge[1]]
                 edge_x.extend([x0, x1, None])
                 edge_y.extend([y0, y1, None])
+                
+                # Dynamic edge thickness based on co-occurrence strength
+                if max_edge_weight == min_edge_weight:
+                    edge_width = 2
+                    edge_opacity = 0.6
+                else:
+                    # Normalized thickness: 1-8px range
+                    normalized_weight = (weight - min_edge_weight) / (max_edge_weight - min_edge_weight)
+                    edge_width = 1 + (normalized_weight * 7)
+                    edge_opacity = 0.3 + (normalized_weight * 0.7)  # 0.3-1.0 opacity
+                
+                edge_widths.extend([edge_width, edge_width, None])
+                edge_opacities.extend([edge_opacity, edge_opacity, None])
                 
                 # Create detailed hover text for edge
                 tag1 = node_labels[edge[0]]
@@ -278,22 +320,49 @@ class Visualizer:
                 edge_hover_text = f"""
                 <b>{tag1} ↔ {tag2}</b><br>
                 <b>Co-occurrence:</b> {weight} papers<br>
+                <b>Connection Strength:</b> {weight}/{max_edge_weight}<br>
                 <b>Papers with both tags:</b><br>
                 {chr(10).join(papers_with_both_tags[:2])}
                 """
                 if len(papers_with_both_tags) > 2:
                     edge_hover_text += f"<br>... and {len(papers_with_both_tags) - 2} more"
                 
+                edge_hover_text += f"<br><br><i>💡 Click on nodes to highlight their connections</i>"
+                
                 edge_hover_texts.extend([edge_hover_text, "", ""])
             
-            fig.add_trace(go.Scatter(
-                x=edge_x, y=edge_y,
-                line=dict(width=1, color='#888'),
-                hoverinfo='text',
-                hovertext=edge_hover_texts,
-                mode='lines'))
+            # Create multiple edge traces for different thickness ranges
+            edge_ranges = [
+                (1, 2, 'rgba(136, 136, 136, 0.3)'),  # Weak connections
+                (2, 4, 'rgba(136, 136, 136, 0.5)'),  # Medium connections
+                (4, 8, 'rgba(136, 136, 136, 0.8)')   # Strong connections
+            ]
+            
+            for min_width, max_width, color in edge_ranges:
+                filtered_edges = []
+                filtered_x = []
+                filtered_y = []
+                filtered_hover = []
+                
+                for i, (edge, width) in enumerate(zip(edges, edge_widths[::3])):
+                    if min_width <= width <= max_width:
+                        x0, y0 = node_positions[edge[0]]
+                        x1, y1 = node_positions[edge[1]]
+                        filtered_x.extend([x0, x1, None])
+                        filtered_y.extend([y0, y1, None])
+                        filtered_hover.extend([edge_hover_texts[i*3], "", ""])
+                
+                if filtered_x:
+                    fig.add_trace(go.Scatter(
+                        x=filtered_x, y=filtered_y,
+                        line=dict(width=max_width, color=color),
+                        hoverinfo='text',
+                        hovertext=filtered_hover,
+                        mode='lines',
+                        showlegend=False
+                    ))
         
-        # Add nodes
+        # Add nodes with interactive highlighting
         node_x = [pos[0] for pos in node_positions]
         node_y = [pos[1] for pos in node_positions]
         
@@ -323,8 +392,11 @@ class Visualizer:
             if len(papers_with_tag) > 3:
                 hover_text += f"<br>... and {len(papers_with_tag) - 3} more papers"
             
+            hover_text += f"<br><br><i>💡 Click to highlight connections</i>"
+            
             hover_texts.append(hover_text)
         
+        # Add nodes with custom data for highlighting
         fig.add_trace(go.Scatter(
             x=node_x, y=node_y,
             mode='markers+text',
@@ -337,7 +409,8 @@ class Visualizer:
                 color=node_colors,
                 line=dict(width=2, color='white')
             ),
-            textfont=dict(size=10, color='white')
+            textfont=dict(size=10, color='white'),
+            customdata=node_labels  # Store tag names for JavaScript
         ))
         
         # Create legend for categories with completeness info
@@ -349,12 +422,19 @@ class Visualizer:
                 used_category_tags = category_tags.intersection(used_tag_set)
                 completeness = len(used_category_tags) / len(category_tags) * 100
                 
+                # Get category statistics
+                category_counts = []
+                for tag in used_category_tags:
+                    category_counts.append(tag_counts.get(tag, 0))
+                avg_frequency = sum(category_counts) / len(category_counts) if category_counts else 0
+                max_frequency = max(category_counts) if category_counts else 0
+                
                 legend_items.append(
                     go.Scatter(
                         x=[None], y=[None],
                         mode='markers',
-                        marker=dict(size=10, color=cat_info['color']),
-                        name=f"{cat_info['name']} ({len(used_category_tags)}/{len(category_tags)} tags)",
+                        marker=dict(size=15, color=cat_info['color']),
+                        name=f"{cat_info['name']} ({len(used_category_tags)}/{len(category_tags)} tags, avg: {avg_frequency:.1f})",
                         showlegend=True
                     )
                 )
@@ -368,17 +448,32 @@ class Visualizer:
         total_used_tags = len(used_tag_set)
         matrix_completeness = (total_used_tags / total_possible_tags) * 100 if total_possible_tags > 0 else 0
         
-        # Update layout
+        # Enhanced layout with better controls
         fig.update_layout(
-            title=f'🌟 Interactive Memory Studies Knowledge Network ({node_count} nodes, {matrix_completeness:.1f}% matrix coverage)',
+            title=dict(
+                text=f'🌟 Interactive Memory Studies Knowledge Network<br><sub>Nodes: {node_count} | Matrix Coverage: {matrix_completeness:.1f}% | Connections: {len(edges)}</sub>',
+                x=0.5,
+                xanchor='center',
+                font=dict(size=16, color='#E8E8E8')
+            ),
             showlegend=True,
             hovermode='closest',
-            margin=dict(b=20,l=5,r=5,t=40),
-            xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-            yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+            margin=dict(b=20,l=5,r=5,t=80),
+            xaxis=dict(
+                showgrid=False, 
+                zeroline=False, 
+                showticklabels=False,
+                range=[-350, 350]  # Fixed range for consistency
+            ),
+            yaxis=dict(
+                showgrid=False, 
+                zeroline=False, 
+                showticklabels=False,
+                range=[-350, 350]  # Fixed range for consistency
+            ),
             plot_bgcolor='#1A1A1A',
             paper_bgcolor='#0F0F0F',
-            height=600,
+            height=700,  # Increased height for better visibility
             legend=dict(
                 yanchor="top",
                 y=0.99,
@@ -387,8 +482,12 @@ class Visualizer:
                 bgcolor='rgba(30,30,30,0.95)',
                 bordercolor='rgba(255,255,255,0.2)',
                 borderwidth=1,
-                font=dict(color='#E8E8E8', size=12)
-            )
+                font=dict(color='#E8E8E8', size=11),
+                itemsizing='constant'
+            ),
+            # Add interactive features
+            dragmode='pan',
+            clickmode='event+select'
         )
         
         # Create matrix completeness analysis
@@ -416,16 +515,507 @@ class Visualizer:
         # Combine the interactive graph with completeness analysis
         full_html = fig.to_html(include_plotlyjs=True, full_html=False) + completeness_html
         
-        return full_html
+        # Helper function to convert NumPy arrays to lists for JSON serialization
+        def safe_json_serialize(obj):
+            """Safely serialize objects that might contain NumPy arrays."""
+            if hasattr(obj, 'tolist'):
+                return obj.tolist()
+            elif isinstance(obj, (list, tuple)):
+                return [safe_json_serialize(item) for item in obj]
+            elif isinstance(obj, dict):
+                return {key: safe_json_serialize(value) for key, value in obj.items()}
+            else:
+                return obj
+        
+        # Add interactive controls and filtering
+        controls_html = f"""
+        <div style="background-color: #1A1A1A; padding: 15px; border-radius: 8px; margin-top: 20px; color: #E8E8E8;">
+            <h4 style="color: #FF6B9D; margin-bottom: 15px;">🎛️ Interactive Controls</h4>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center;">
+                <div>
+                    <label style="color: #E8E8E8; font-weight: bold;">Filter by Category:</label>
+                    <select id="categoryFilter" style="margin-left: 10px; padding: 5px; background-color: #2A2A2A; color: #E8E8E8; border: 1px solid #444; border-radius: 4px;">
+                        <option value="all">All Categories</option>
+                        <option value="time">⏰ Time Periods</option>
+                        <option value="discipline">🎓 Academic Disciplines</option>
+                        <option value="memory_carrier">🏛️ Memory Carriers</option>
+                        <option value="concept_tags">🧠 Memory Concepts</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="color: #E8E8E8; font-weight: bold;">Min Frequency:</label>
+                    <input type="range" id="frequencyFilter" min="1" max="{max(tag_counts.values())}" value="1" style="margin-left: 10px;">
+                    <span id="frequencyValue" style="margin-left: 10px;">1</span>
+                </div>
+                <div>
+                    <button id="resetView" style="padding: 8px 15px; background-color: #FF6B9D; color: white; border: none; border-radius: 4px; cursor: pointer;">Reset View</button>
+                    <button id="clearHighlight" style="padding: 8px 15px; background-color: #4ECDC4; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">Clear Highlight</button>
+                    <button id="testHighlight" style="padding: 8px 15px; background-color: #F7DC6F; color: black; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">Test Highlight T4</button>
+                </div>
+            </div>
+            <div style="margin-top: 10px; padding: 10px; background-color: rgba(255,255,255,0.05); border-radius: 5px;">
+                <span style="color: #FF6B9D; font-weight: bold;">💡 Tip:</span> Click on any node to highlight only its connections. Click "Clear Highlight" to show all connections again.
+            </div>
+        </div>
+        
+        <!-- Connection Statistics Panel -->
+        <div id="connectionStats" style="background-color: #1A1A1A; padding: 15px; border-radius: 8px; margin-top: 20px; color: #E8E8E8; display: none;">
+            <h4 style="color: #4ECDC4; margin-bottom: 15px;">📊 Connection Statistics</h4>
+            <div id="statsContent"></div>
+        </div>
+        
+        <script>
+        // Store edge data for highlighting functionality
+        const edgeData = {{
+            edges: {json.dumps(safe_json_serialize(edges))},
+            edgeWeights: {json.dumps(safe_json_serialize(edge_weights))},
+            nodeLabels: {json.dumps(safe_json_serialize(node_labels))},
+            nodePositions: {json.dumps(safe_json_serialize(node_positions))},
+            tagCounts: {json.dumps(safe_json_serialize(dict(tag_counts)))},
+            tagMetadata: {json.dumps(safe_json_serialize(tag_metadata))}
+        }};
+        
+        let highlightedNode = null;
+        let originalEdgeTraces = [];
+        
+        // Interactive controls for the network visualization
+        document.addEventListener('DOMContentLoaded', function() {{
+            const categoryFilter = document.getElementById('categoryFilter');
+            const frequencyFilter = document.getElementById('frequencyFilter');
+            const frequencyValue = document.getElementById('frequencyValue');
+            const resetView = document.getElementById('resetView');
+            const clearHighlight = document.getElementById('clearHighlight');
+            const testHighlight = document.getElementById('testHighlight');
+            const connectionStats = document.getElementById('connectionStats');
+            const statsContent = document.getElementById('statsContent');
+            
+            // Update frequency display
+            frequencyFilter.addEventListener('input', function() {{
+                frequencyValue.textContent = this.value;
+            }});
+            
+            // Filter functionality (placeholder for future implementation)
+            categoryFilter.addEventListener('change', function() {{
+                console.log('Category filter changed to:', this.value);
+                // Future: Implement actual filtering logic
+            }});
+            
+            frequencyFilter.addEventListener('input', function() {{
+                console.log('Frequency filter changed to:', this.value);
+                // Future: Implement actual filtering logic
+            }});
+            
+            resetView.addEventListener('click', function() {{
+                // Reset Plotly view
+                if (typeof Plotly !== 'undefined') {{
+                    let plotDiv = document.querySelector('[data-testid="plotly-graph"]');
+                    if (!plotDiv) {{
+                        plotDiv = document.querySelector('.plotly-graph-div');
+                    }}
+                    if (!plotDiv) {{
+                        plotDiv = document.querySelector('.js-plotly-plot');
+                    }}
+                    if (!plotDiv) {{
+                        plotDiv = document.querySelector('[class*="plotly"]');
+                    }}
+                    if (plotDiv) {{
+                        Plotly.relayout(plotDiv, {{
+                            'xaxis.range': [-350, 350],
+                            'yaxis.range': [-350, 350]
+                        }});
+                    }}
+                }}
+            }});
+            
+            clearHighlight.addEventListener('click', function() {{
+                clearNodeHighlight();
+            }});
+            
+            testHighlight.addEventListener('click', function() {{
+                console.log('Test highlight button clicked');
+                highlightNodeConnections('T4');
+            }});
+            
+            // Set up click event listener for the plot
+            setTimeout(function() {{
+                // Try multiple selectors to find the Plotly graph in Streamlit
+                let plotDiv = document.querySelector('[data-testid="plotly-graph"]');
+                if (!plotDiv) {{
+                    plotDiv = document.querySelector('.plotly-graph-div');
+                }}
+                if (!plotDiv) {{
+                    plotDiv = document.querySelector('.js-plotly-plot');
+                }}
+                if (!plotDiv) {{
+                    plotDiv = document.querySelector('[class*="plotly"]');
+                }}
+                if (!plotDiv) {{
+                    // Try to find any div with Plotly data
+                    const allDivs = document.querySelectorAll('div');
+                    for (let div of allDivs) {{
+                        if (div._fullData || div.layout) {{
+                            plotDiv = div;
+                            break;
+                        }}
+                    }}
+                }}
+                
+                if (plotDiv) {{
+                    console.log('Setting up click event listener for plot');
+                    plotDiv.on('plotly_click', function(data) {{
+                        console.log('Plot clicked:', data);
+                        if (data.points && data.points.length > 0) {{
+                            const point = data.points[0];
+                            console.log('Clicked point:', point);
+                            
+                            // Check if this is a node (has customdata)
+                            if (point.data && point.data.customdata && point.data.customdata.length > point.pointIndex) {{
+                                const clickedNode = point.data.customdata[point.pointIndex];
+                                console.log('Clicked node:', clickedNode);
+                                highlightNodeConnections(clickedNode);
+                            }} else {{
+                                console.log('No customdata found for clicked point');
+                            }}
+                        }}
+                    }});
+                }} else {{
+                    console.log('Plot div not found with any selector');
+                    // Try again after a longer delay
+                    setTimeout(function() {{
+                        const retryPlotDiv = document.querySelector('[data-testid="plotly-graph"]') || 
+                                           document.querySelector('.plotly-graph-div') ||
+                                           document.querySelector('.js-plotly-plot') ||
+                                           document.querySelector('[class*="plotly"]');
+                        if (retryPlotDiv) {{
+                            console.log('Found plot div on retry');
+                            retryPlotDiv.on('plotly_click', function(data) {{
+                                console.log('Plot clicked (retry):', data);
+                                if (data.points && data.points.length > 0) {{
+                                    const point = data.points[0];
+                                    if (point.data && point.data.customdata && point.data.customdata.length > point.pointIndex) {{
+                                        const clickedNode = point.data.customdata[point.pointIndex];
+                                        console.log('Clicked node (retry):', clickedNode);
+                                        highlightNodeConnections(clickedNode);
+                                    }}
+                                }}
+                            }});
+                        }}
+                    }}, 3000);
+                }}
+            }}, 2000);  // Increased timeout to ensure Plotly is fully loaded
+        }});
+        
+        function highlightNodeConnections(nodeName) {{
+            console.log('highlightNodeConnections called with:', nodeName);
+            
+            if (highlightedNode === nodeName) {{
+                console.log('Same node clicked, clearing highlight');
+                clearNodeHighlight();
+                return;
+            }}
+            
+            highlightedNode = nodeName;
+            console.log('Highlighting connections for node:', nodeName);
+            
+            // Find the node index
+            const nodeIndex = edgeData.nodeLabels.indexOf(nodeName);
+            console.log('Node index:', nodeIndex);
+            if (nodeIndex === -1) {{
+                console.log('Node not found in nodeLabels');
+                return;
+            }}
+            
+            // Find all edges connected to this node
+            const connectedEdges = [];
+            const connectedNodes = new Set();
+            const connectionDetails = [];
+            
+            console.log('Searching through edges:', edgeData.edges.length);
+            edgeData.edges.forEach((edge, index) => {{
+                if (edge[0] === nodeIndex || edge[1] === nodeIndex) {{
+                    const otherNodeIndex = edge[0] === nodeIndex ? edge[1] : edge[0];
+                    const otherNodeName = edgeData.nodeLabels[otherNodeIndex];
+                    const weight = edgeData.edgeWeights[index];
+                    
+                    console.log('Found connected edge:', edge, 'to node:', otherNodeName, 'weight:', weight);
+                    
+                    connectedEdges.push({{
+                        edge: edge,
+                        weight: weight,
+                        otherNode: otherNodeName,
+                        otherNodeIndex: otherNodeIndex
+                    }});
+                    connectedNodes.add(edge[0]);
+                    connectedNodes.add(edge[1]);
+                    
+                    connectionDetails.push({{
+                        node: otherNodeName,
+                        weight: weight,
+                        category: edgeData.tagMetadata[otherNodeName]?.category_name || 'Unknown'
+                    }});
+                }}
+            }});
+            
+            console.log('Found connected edges:', connectedEdges.length);
+            console.log('Connected nodes:', Array.from(connectedNodes));
+            
+            // Show connection statistics
+            showConnectionStatistics(nodeName, connectionDetails);
+            
+            // Update the plot with highlighted connections
+            if (typeof Plotly !== 'undefined') {{
+                // Try multiple selectors to find the Plotly graph
+                let plotDiv = document.querySelector('[data-testid="plotly-graph"]');
+                if (!plotDiv) {{
+                    plotDiv = document.querySelector('.plotly-graph-div');
+                }}
+                if (!plotDiv) {{
+                    plotDiv = document.querySelector('.js-plotly-plot');
+                }}
+                if (!plotDiv) {{
+                    plotDiv = document.querySelector('[class*="plotly"]');
+                }}
+                if (!plotDiv) {{
+                    // Try to find any div with Plotly data
+                    const allDivs = document.querySelectorAll('div');
+                    for (let div of allDivs) {{
+                        if (div._fullData || div.layout) {{
+                            plotDiv = div;
+                            break;
+                        }}
+                    }}
+                }}
+                
+                if (plotDiv) {{
+                    console.log('Found plot div, updating with highlights');
+                    
+                    // Create highlighted edge trace
+                    const highlightedEdgeX = [];
+                    const highlightedEdgeY = [];
+                    const highlightedEdgeText = [];
+                    
+                    connectedEdges.forEach((edgeItem) => {{
+                        const edge = edgeItem.edge;
+                        const weight = edgeItem.weight;
+                        
+                        // Add safety checks for node positions
+                        if (!edgeData.nodePositions || !edgeData.nodePositions[edge[0]] || !edgeData.nodePositions[edge[1]]) {{
+                            console.log('Invalid node positions for edge:', edge);
+                            return;
+                        }}
+                        
+                        const x0 = edgeData.nodePositions[edge[0]][0];
+                        const y0 = edgeData.nodePositions[edge[0]][1];
+                        const x1 = edgeData.nodePositions[edge[1]][0];
+                        const y1 = edgeData.nodePositions[edge[1]][1];
+                        
+                        console.log('Adding highlighted edge:', edge, 'from', x0, y0, 'to', x1, y1);
+                        
+                        highlightedEdgeX.push(x0, x1, null);
+                        highlightedEdgeY.push(y0, y1, null);
+                        highlightedEdgeText.push(`Connection: ${{edgeData.nodeLabels[edge[0]]}} ↔ ${{edgeData.nodeLabels[edge[1]]}} (Weight: ${{weight}})`, "", "");
+                    }});
+                    
+                    console.log('Adding highlighted edge trace with', highlightedEdgeX.length / 3, 'edges');
+                    
+                    // Add highlighted edge trace
+                    Plotly.addTraces(plotDiv, {{
+                        x: highlightedEdgeX,
+                        y: highlightedEdgeY,
+                        line: {{width: 4, color: '#FF6B9D'}},
+                        hoverinfo: 'text',
+                        hovertext: highlightedEdgeText,
+                        mode: 'lines',
+                        showlegend: false,
+                        name: 'highlighted-connections'
+                    }});
+                    
+                    // Dim other nodes
+                    const nodeTrace = plotDiv.data.find(trace => trace.mode && trace.mode.includes('markers'));
+                    if (nodeTrace) {{
+                        console.log('Found node trace, updating colors and sizes');
+                        const newColors = [...nodeTrace.marker.color];
+                        const newSizes = [...nodeTrace.marker.size];
+                        
+                        edgeData.nodeLabels.forEach((label, index) => {{
+                            if (!connectedNodes.has(index)) {{
+                                // Dim non-connected nodes
+                                newColors[index] = 'rgba(128, 128, 128, 0.3)';
+                                newSizes[index] = Math.max(newSizes[index] * 0.5, 10);
+                            }} else if (index === nodeIndex) {{
+                                // Highlight selected node
+                                newColors[index] = '#FF6B9D';
+                                newSizes[index] = newSizes[index] * 1.5;
+                            }}
+                        }});
+                        
+                        console.log('Updating node colors and sizes');
+                        Plotly.restyle(plotDiv, {{
+                            'marker.color': [newColors],
+                            'marker.size': [newSizes]
+                        }}, [nodeTrace.index]);
+                    }} else {{
+                        console.log('Node trace not found');
+                    }}
+                    
+                    // Update title to show highlighted node
+                    Plotly.relayout(plotDiv, {{
+                        'title.text': `🌟 Interactive Memory Studies Knowledge Network<br><sub>Highlighting connections for: <b>${{nodeName}}</b> (${{connectedEdges.length}} connections)</sub>`
+                    }});
+                    
+                    console.log('Highlighting complete');
+                }} else {{
+                    console.log('Plot div not found for highlighting');
+                }}
+            }} else {{
+                console.log('Plotly not available');
+            }}
+        }}
+        
+        function showConnectionStatistics(nodeName, connections) {{
+            const connectionStats = document.getElementById('connectionStats');
+            const statsContent = document.getElementById('statsContent');
+            
+            // Group connections by category
+            const categoryStats = {{}};
+            connections.forEach(conn => {{
+                if (!categoryStats[conn.category]) {{
+                    categoryStats[conn.category] = [];
+                }}
+                categoryStats[conn.category].push(conn);
+            }});
+            
+            // Calculate statistics
+            const totalConnections = connections.length;
+            const avgWeight = connections.reduce((sum, conn) => sum + conn.weight, 0) / totalConnections;
+            const maxWeight = Math.max(...connections.map(conn => conn.weight));
+            const minWeight = Math.min(...connections.map(conn => conn.weight));
+            
+            // Generate statistics HTML
+            let statsHTML = `
+                <div style="margin-bottom: 15px;">
+                    <h5 style="color: #FF6B9D; margin-bottom: 10px;">📈 ${{nodeName}} Connection Overview</h5>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 15px;">
+                        <div style="background-color: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px; text-align: center;">
+                            <div style="font-size: 24px; color: #4ECDC4; font-weight: bold;">${{totalConnections}}</div>
+                            <div style="font-size: 12px; color: #B0B0B0;">Total Connections</div>
+                        </div>
+                        <div style="background-color: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px; text-align: center;">
+                            <div style="font-size: 24px; color: #FF6B9D; font-weight: bold;">${{avgWeight.toFixed(1)}}</div>
+                            <div style="font-size: 12px; color: #B0B0B0;">Avg Weight</div>
+                        </div>
+                        <div style="background-color: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px; text-align: center;">
+                            <div style="font-size: 24px; color: #F7DC6F; font-weight: bold;">${{maxWeight}}</div>
+                            <div style="font-size: 12px; color: #B0B0B0;">Max Weight</div>
+                        </div>
+                        <div style="background-color: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px; text-align: center;">
+                            <div style="font-size: 24px; color: #45B7D1; font-weight: bold;">${{Object.keys(categoryStats).length}}</div>
+                            <div style="font-size: 12px; color: #B0B0B0;">Categories</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add category breakdown
+            statsHTML += '<h6 style="color: #E8E8E8; margin-bottom: 10px;">📊 Connections by Category:</h6>';
+            Object.entries(categoryStats).forEach(([category, conns]) => {{
+                const categoryWeight = conns.reduce((sum, conn) => sum + conn.weight, 0);
+                const avgCategoryWeight = categoryWeight / conns.length;
+                
+                statsHTML += `
+                    <div style="background-color: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px; margin-bottom: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: #E8E8E8; font-weight: bold;">${{category}}</span>
+                            <span style="color: #4ECDC4;">${{conns.length}} connections</span>
+                        </div>
+                        <div style="font-size: 12px; color: #B0B0B0; margin-top: 5px;">
+                            Avg weight: ${{avgCategoryWeight.toFixed(1)}} | Total weight: ${{categoryWeight}}
+                        </div>
+                    </div>
+                `;
+            }});
+            
+            statsContent.innerHTML = statsHTML;
+            connectionStats.style.display = 'block';
+        }}
+        
+        function clearNodeHighlight() {{
+            if (highlightedNode === null) return;
+            
+            highlightedNode = null;
+            console.log('Clearing node highlight');
+            
+            // Hide connection statistics
+            document.getElementById('connectionStats').style.display = 'none';
+            
+            if (typeof Plotly !== 'undefined') {{
+                // Try multiple selectors to find the Plotly graph
+                let plotDiv = document.querySelector('[data-testid="plotly-graph"]');
+                if (!plotDiv) {{
+                    plotDiv = document.querySelector('.plotly-graph-div');
+                }}
+                if (!plotDiv) {{
+                    plotDiv = document.querySelector('.js-plotly-plot');
+                }}
+                if (!plotDiv) {{
+                    plotDiv = document.querySelector('[class*="plotly"]');
+                }}
+                if (!plotDiv) {{
+                    // Try to find any div with Plotly data
+                    const allDivs = document.querySelectorAll('div');
+                    for (let div of allDivs) {{
+                        if (div._fullData || div.layout) {{
+                            plotDiv = div;
+                            break;
+                        }}
+                    }}
+                }}
+                
+                if (plotDiv) {{
+                    // Remove highlighted edge traces
+                    const tracesToRemove = [];
+                    plotDiv.data.forEach((trace, index) => {{
+                        if (trace.name === 'highlighted-connections') {{
+                            tracesToRemove.push(index);
+                        }}
+                    }});
+                    
+                    if (tracesToRemove.length > 0) {{
+                        Plotly.deleteTraces(plotDiv, tracesToRemove);
+                    }}
+                    
+                    // Restore original node colors and sizes
+                    const nodeTrace = plotDiv.data.find(trace => trace.mode && trace.mode.includes('markers'));
+                    if (nodeTrace) {{
+                        const originalColors = {json.dumps(safe_json_serialize(node_colors))};
+                        const originalSizes = {json.dumps(safe_json_serialize(node_sizes))};
+                        
+                        Plotly.restyle(plotDiv, {{
+                            'marker.color': [originalColors],
+                            'marker.size': [originalSizes]
+                        }}, [nodeTrace.index]);
+                    }}
+                    
+                    // Restore original title
+                    Plotly.relayout(plotDiv, {{
+                        'title.text': '🌟 Interactive Memory Studies Knowledge Network<br><sub>Click on any node to highlight its connections</sub>'
+                    }});
+                }}
+            }}
+        }}
+        </script>
+        """
+        
+        return full_html + controls_html
     
-    def _force_directed_layout(self, adjacency_matrix, n_iterations=250):
+    def _force_directed_layout(self, adjacency_matrix, n_iterations=300):
         """Generate force-directed layout positions for nodes with enhanced spacing and collision detection."""
         import numpy as np
         
         n_nodes = len(adjacency_matrix)
         
         # Initialize positions in a more controlled way to ensure visibility
-        positions = np.random.rand(n_nodes, 2) * 400 - 200  # Larger spread for better visibility
+        positions = np.random.rand(n_nodes, 2) * 600 - 300  # Larger spread for better visibility
         
         # Enhanced force-directed layout simulation with compact parameters
         for iteration in range(n_iterations):
@@ -439,14 +1029,14 @@ class Visualizer:
                     
                     if distance > 0:
                         # Repulsive force for better spacing
-                        min_distance = 150  # Larger minimum distance for better visibility
+                        min_distance = 200  # Larger minimum distance for better visibility
                         
                         if distance < min_distance:
                             # Strong repulsion when nodes are too close
-                            force_magnitude = 12000 / (distance ** 2) + 800 / distance
+                            force_magnitude = 15000 / (distance ** 2) + 1000 / distance
                         else:
                             # Normal repulsion
-                            force_magnitude = 6000 / (distance ** 2)
+                            force_magnitude = 8000 / (distance ** 2)
                         
                         force = force_magnitude * diff / distance
                         forces[i] += force
@@ -461,39 +1051,39 @@ class Visualizer:
                         
                         if distance > 0:
                             # Distance-based attractive force
-                            ideal_distance = 200  # Larger ideal distance for better visibility
+                            ideal_distance = 250  # Larger ideal distance for better visibility
                             if distance > ideal_distance:
                                 # Pull nodes closer if they're too far
-                                force_magnitude = 0.4 * adjacency_matrix[i][j] * (distance - ideal_distance)
+                                force_magnitude = 0.6 * adjacency_matrix[i][j] * (distance - ideal_distance)
                             else:
                                 # Push nodes apart if they're too close
-                                force_magnitude = 0.2 * adjacency_matrix[i][j] * (ideal_distance - distance)
+                                force_magnitude = 0.3 * adjacency_matrix[i][j] * (ideal_distance - distance)
                             
                             force = force_magnitude * diff / distance
                             forces[i] += force
                             forces[j] -= force
             
             # Boundary forces to keep nodes within larger, visible bounds
-            boundary_force = 500  # Strong boundary force for better layout
+            boundary_force = 800  # Strong boundary force for better layout
             for i in range(n_nodes):
                 # X-axis boundary
-                if positions[i][0] < -300:
+                if positions[i][0] < -400:
                     forces[i][0] += boundary_force
-                elif positions[i][0] > 300:
+                elif positions[i][0] > 400:
                     forces[i][0] -= boundary_force
                 
                 # Y-axis boundary
-                if positions[i][1] < -300:
+                if positions[i][1] < -400:
                     forces[i][1] += boundary_force
-                elif positions[i][1] > 300:
+                elif positions[i][1] > 400:
                     forces[i][1] -= boundary_force
             
             # Update positions with adaptive step size
-            step_size = 0.3 if iteration < 150 else 0.15  # Faster convergence for compact layout
+            step_size = 0.4 if iteration < 200 else 0.2  # Faster convergence for compact layout
             positions += forces * step_size
             
             # Keep nodes within larger, visible bounds
-            positions = np.clip(positions, -300, 300)
+            positions = np.clip(positions, -400, 400)
         
         return positions
     
