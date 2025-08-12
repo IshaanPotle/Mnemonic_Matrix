@@ -289,18 +289,36 @@ class StreamlitApp:
         # Timeline restriction notice
         st.info("🎯 **Timeline Restriction Active:** Timeline tags (T1-T5) are now based on **publication date only**, not the content discussed in the paper.")
         
-        # Add a visible sidebar toggle hint
-        st.sidebar.markdown("---")
+        # Add main page sidebar indicator
+        st.warning("🔍 **LOOK LEFT!** The sidebar should be visible on the left side of this page. If you can't see it:")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.markdown("**Keyboard Shortcut:** Press **'S'** to toggle sidebar")
+        with col2:
+            st.markdown("**Mouse:** Click **☰** (hamburger) in top-left")
+        with col3:
+            st.markdown("**Touch:** Look for **▶️** arrow on left edge")
+        
+        st.markdown("---")
+        
+        # Force sidebar to be visible with a very prominent header
+        st.sidebar.markdown("## 🚨 **SIDEBAR IS HERE!** 🚨")
         st.sidebar.markdown("### 📱 **Sidebar Controls**")
-        st.sidebar.markdown("If you can't see the input methods below, try:")
+        st.sidebar.markdown("**If you can't see the input methods below:**")
         st.sidebar.markdown("1. **Click the hamburger menu** (☰) in the top left")
         st.sidebar.markdown("2. **Or use the arrow button** (▶️) to expand")
+        st.sidebar.markdown("3. **Or press 'S' on your keyboard**")
         st.sidebar.markdown("---")
         
         # Sidebar for input methods
         with st.sidebar:
             st.header("📥 Input Methods")
             st.markdown("**Choose how to add papers:**")
+            
+            # Add a test button to verify sidebar is working
+            if st.button("🔍 **TEST SIDEBAR** - Click me!"):
+                st.balloons()
+                st.success("🎉 Sidebar is working!")
             
             input_method = st.radio(
                 "Choose input method:",
