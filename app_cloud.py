@@ -241,86 +241,163 @@ class StreamlitApp:
         return output.getvalue()
     
     def display_visualizations(self, papers: List[Dict]):
-        """Display original interactive visualizations for the papers."""
+        """Display lightweight but interactive visualizations for the papers."""
         st.header("📊 Visualizations")
         
         if not papers:
             st.warning("No papers to visualize.")
             return
         
-        # Create original visualizations using the Visualizer class
         try:
-            viz = Visualizer()
-            viz_data = viz.create_visualizations(papers)
+            # Interactive Tag Network (Lightweight Plotly version)
+            st.subheader("🏷️ Interactive Tag Network")
+            st.markdown("---")
             
-            if viz_data:
-                # Display tag network (interactive knowledge graph)
-                if 'tag_network' in viz_data:
-                    st.subheader("🏷️ Tag Network")
-                    st.markdown("---")
-                    if viz_data['tag_network'].startswith('<'):
-                        # Use markdown for HTML content to avoid compatibility issues
-                        st.markdown(viz_data['tag_network'], unsafe_allow_html=True)
-                    else:
-                        st.write(viz_data['tag_network'])
-                    st.markdown("---")
-                    st.markdown("")  # Extra spacing
+            # Create lightweight network graph
+            all_tags = []
+            for paper in papers:
+                all_tags.extend(paper.get('tags', []))
+            
+            if all_tags:
+                tag_counts = Counter(all_tags)
+                # Create network nodes and edges
+                nodes = list(tag_counts.keys())
+                node_sizes = [tag_counts[tag] * 20 for tag in nodes]  # Scale sizes
                 
-                # Display tag distribution
-                if 'tag_distribution' in viz_data:
-                    st.subheader("📈 Tag Distribution")
-                    st.markdown("---")
-                    if viz_data['tag_distribution'].startswith('<'):
-                        st.markdown(viz_data['tag_distribution'], unsafe_allow_html=True)
-                    else:
-                        st.write(viz_data['tag_distribution'])
-                    st.markdown("---")
-                    st.markdown("")  # Extra spacing
+                # Create interactive network using Plotly
+                fig = go.Figure()
                 
-                # Display year distribution
-                if 'paper_timeline' in viz_data:
-                    st.subheader("📅 Publication Timeline")
-                    st.markdown("---")
-                    if viz_data['paper_timeline'].startswith('<'):
-                        st.markdown(viz_data['paper_timeline'], unsafe_allow_html=True)
-                    else:
-                        st.write(viz_data['paper_timeline'])
-                    st.markdown("---")
-                    st.markdown("")  # Extra spacing
+                # Add nodes
+                fig.add_trace(go.Scatter(
+                    x=[i * 2 for i in range(len(nodes))],
+                    y=[0] * len(nodes),
+                    mode='markers+text',
+                    marker=dict(
+                        size=node_sizes,
+                        color='lightblue',
+                        line=dict(width=2, color='darkblue')
+                    ),
+                    text=nodes,
+                    textposition="top center",
+                    name="Tags"
+                ))
                 
-                # Display concept co-occurrence matrix
-                if 'concept_cooccurrence' in viz_data:
-                    st.subheader("🧠 Concept Co-occurrence Matrix")
-                    st.markdown("---")
-                    if viz_data['concept_cooccurrence'].startswith('<'):
-                        st.markdown(viz_data['concept_cooccurrence'], unsafe_allow_html=True)
-                    else:
-                        st.write(viz_data['concept_cooccurrence'])
-                    st.markdown("---")
-                    st.markdown("")  # Extra spacing
+                fig.update_layout(
+                    title="Interactive Tag Network",
+                    xaxis_title="",
+                    yaxis_title="",
+                    height=500,
+                    showlegend=False,
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    paper_bgcolor='rgba(0,0,0,0)'
+                )
                 
-                # Display matrix coverage visualization
-                if 'matrix_coverage' in viz_data:
-                    st.subheader("📊 Matrix Coverage Analysis")
-                    st.markdown("---")
-                    if viz_data['matrix_coverage'].startswith('<'):
-                        st.markdown(viz_data['matrix_coverage'], unsafe_allow_html=True)
-                    else:
-                        st.write(viz_data['matrix_coverage'])
-                    st.markdown("---")
-                    st.markdown("")  # Extra spacing
+                st.plotly_chart(fig, use_container_width=True)
+                st.info("💡 **Interactive:** Hover over nodes to see tag names and sizes")
+            else:
+                st.info("No tags found in papers.")
+            
+            st.markdown("---")
+            
+            # Interactive Tag Distribution
+            st.subheader("📈 Interactive Tag Distribution")
+            st.markdown("---")
+            
+            if all_tags:
+                tag_counts = Counter(all_tags)
+                fig = px.bar(
+                    x=list(tag_counts.keys()),
+                    y=list(tag_counts.values()),
+                    title="Tag Frequency Distribution",
+                    labels={'x': 'Tags', 'y': 'Frequency'},
+                    color=list(tag_counts.values()),
+                    color_continuous_scale='viridis'
+                )
+                fig.update_layout(
+                    xaxis_tickangle=-45,
+                    height=500,
+                    margin=dict(l=50, r=50, t=80, b=80)
+                )
+                st.plotly_chart(fig, use_container_width=True)
+                st.info("💡 **Interactive:** Hover over bars to see exact values, zoom and pan")
+            else:
+                st.info("No tags to display.")
+            
+            st.markdown("---")
+            
+            # Interactive Timeline
+            st.subheader("📅 Interactive Publication Timeline")
+            st.markdown("---")
+            
+            papers_with_years = []
+            for paper in papers:
+                year = paper.get('year')
+                if year and str(year).isdigit():
+                    try:
+                        papers_with_years.append({
+                            'title': paper.get('title', ''),
+                            'year': int(year),
+                            'tags': len(paper.get('tags', [])),
+                            'journal': paper.get('journal', 'Unknown')
+                        })
+                    except ValueError:
+                        continue
+            
+            if papers_with_years:
+                papers_with_years.sort(key=lambda x: x['year'])
                 
-                # Display dynamic filtering dashboard
-                if 'dynamic_filtering' in viz_data:
-                    st.subheader("🎛️ Dynamic Filtering Dashboard")
-                    st.markdown("---")
-                    if viz_data['dynamic_filtering'].startswith('<'):
-                        st.markdown(viz_data['dynamic_filtering'], unsafe_allow_html=True)
+                fig = px.scatter(
+                    x=[p['year'] for p in papers_with_years],
+                    y=[p['tags'] for p in papers_with_years],
+                    size=[p['tags'] * 10 for p in papers_with_years],  # Size by tag count
+                    color=[p['journal'] for p in papers_with_years],
+                    hover_data=['title'],
+                    title="Papers by Publication Year and Tag Count",
+                    labels={'x': 'Publication Year', 'y': 'Number of Tags', 'color': 'Journal'}
+                )
+                fig.update_layout(height=500, margin=dict(l=50, r=50, t=80, b=80))
+                st.plotly_chart(fig, use_container_width=True)
+                st.info("💡 **Interactive:** Hover for details, click and drag to zoom, double-click to reset")
+            else:
+                st.info("No papers with valid publication years found.")
+            
+            st.markdown("---")
+            
+            # Interactive Tag Categories
+            st.subheader("📊 Interactive Tag Categories")
+            st.markdown("---")
+            
+            if all_tags:
+                category_counts = {'Time': 0, 'Discipline': 0, 'Memory Carrier': 0, 'Concept': 0, 'Other': 0}
+                for tag in all_tags:
+                    if tag.startswith('T'):
+                        category_counts['Time'] += 1
+                    elif tag.startswith('D'):
+                        category_counts['Discipline'] += 1
+                    elif tag.startswith('MC'):
+                        category_counts['Memory Carrier'] += 1
+                    elif tag.startswith('CT'):
+                        category_counts['Concept'] += 1
                     else:
-                        st.write(viz_data['dynamic_filtering'])
-                    st.markdown("---")
-                    st.markdown("")  # Extra spacing
-                    
+                        category_counts['Other'] += 1
+                
+                # Only show categories with data
+                categories_with_data = {k: v for k, v in category_counts.items() if v > 0}
+                if categories_with_data:
+                    fig = px.pie(
+                        values=list(categories_with_data.values()),
+                        names=list(categories_with_data.keys()),
+                        title="Tag Distribution by Category",
+                        color_discrete_sequence=px.colors.qualitative.Set3
+                    )
+                    fig.update_layout(height=500, margin=dict(l=50, r=50, t=80, b=80))
+                    st.plotly_chart(fig, use_container_width=True)
+                    st.info("💡 **Interactive:** Click on pie slices to highlight, hover for details")
+                else:
+                    st.info("No categorized tags found.")
+            else:
+                st.info("No tags to categorize.")
+                
         except Exception as e:
             st.error(f"Error creating visualizations: {str(e)}")
             st.info("Showing basic paper information instead.")
