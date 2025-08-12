@@ -241,84 +241,114 @@ class StreamlitApp:
         return output.getvalue()
     
     def display_visualizations(self, papers: List[Dict]):
-        """Display visualizations for the papers."""
+        """Display lightweight visualizations for the papers."""
         st.header("📊 Visualizations")
         
         if not papers:
             st.warning("No papers to visualize.")
             return
         
-        # Create visualizations
-        viz = Visualizer()
-        viz_data = viz.create_visualizations(papers)
-        
-        if viz_data:
-            # Display tag network with much better spacing and full width
-            if 'tag_network' in viz_data:
-                st.subheader("🏷️ Tag Network")
-                st.markdown("---")
-                if viz_data['tag_network'].startswith('<'):
-                    # Use markdown instead of HTML component to avoid compatibility issues
-                    st.markdown(viz_data['tag_network'], unsafe_allow_html=True)
-                else:
-                    st.write(viz_data['tag_network'])
-                st.markdown("---")
-                st.markdown("")  # Extra spacing
+        # Create simple, lightweight visualizations instead of heavy HTML
+        try:
+            # Simple tag distribution bar chart
+            st.subheader("🏷️ Tag Distribution")
+            all_tags = []
+            for paper in papers:
+                all_tags.extend(paper.get('tags', []))
             
-            # Display tag distribution with better spacing and full width
-            if 'tag_distribution' in viz_data:
-                st.subheader("📈 Tag Distribution")
-                st.markdown("---")
-                if viz_data['tag_distribution'].startswith('<'):
-                    st.markdown(viz_data['tag_distribution'], unsafe_allow_html=True)
-                else:
-                    st.write(viz_data['tag_distribution'])
-                st.markdown("---")
-                st.markdown("")  # Extra spacing
+            if all_tags:
+                tag_counts = Counter(all_tags)
+                fig = px.bar(
+                    x=list(tag_counts.keys()),
+                    y=list(tag_counts.values()),
+                    title="Tag Frequency",
+                    labels={'x': 'Tags', 'y': 'Count'}
+                )
+                fig.update_layout(
+                    xaxis_tickangle=-45,
+                    height=400,
+                    margin=dict(l=50, r=50, t=80, b=80)
+                )
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("No tags found in papers.")
             
-            # Display year distribution with better spacing and full width
-            if 'paper_timeline' in viz_data:
-                st.subheader("📅 Publication Timeline")
-                st.markdown("---")
-                if viz_data['paper_timeline'].startswith('<'):
-                    st.markdown(viz_data['paper_timeline'], unsafe_allow_html=True)
-                else:
-                    st.write(viz_data['paper_timeline'])
-                st.markdown("---")
-                st.markdown("")  # Extra spacing
+            st.markdown("---")
             
-            # Display concept co-occurrence matrix with much better spacing and full width
-            if 'concept_cooccurrence' in viz_data:
-                st.subheader("🧠 Concept Co-occurrence Matrix")
-                st.markdown("---")
-                if viz_data['concept_cooccurrence'].startswith('<'):
-                    st.markdown(viz_data['concept_cooccurrence'], unsafe_allow_html=True)
-                else:
-                    st.write(viz_data['concept_cooccurrence'])
-                st.markdown("---")
-                st.markdown("")  # Extra spacing
+            # Simple timeline scatter plot
+            st.subheader("📅 Publication Timeline")
+            papers_with_years = []
+            for paper in papers:
+                year = paper.get('year')
+                if year and str(year).isdigit():
+                    try:
+                        papers_with_years.append({
+                            'title': paper.get('title', ''),
+                            'year': int(year),
+                            'tags': len(paper.get('tags', []))
+                        })
+                    except ValueError:
+                        continue
             
-            # Display matrix coverage visualization with much better spacing and full width
-            if 'matrix_coverage' in viz_data:
-                st.subheader("📊 Matrix Coverage Analysis")
-                st.markdown("---")
-                if viz_data['matrix_coverage'].startswith('<'):
-                    st.markdown(viz_data['matrix_coverage'], unsafe_allow_html=True)
-                else:
-                    st.write(viz_data['matrix_coverage'])
-                st.markdown("---")
-                st.markdown("")  # Extra spacing
+            if papers_with_years:
+                papers_with_years.sort(key=lambda x: x['year'])
+                fig = px.scatter(
+                    x=[p['year'] for p in papers_with_years],
+                    y=[p['tags'] for p in papers_with_years],
+                    text=[p['title'][:30] + '...' if len(p['title']) > 30 else p['title'] for p in papers_with_years],
+                    title="Papers by Year and Tag Count",
+                    labels={'x': 'Publication Year', 'y': 'Number of Tags'}
+                )
+                fig.update_traces(textposition="top center")
+                fig.update_layout(height=400, margin=dict(l=50, r=50, t=80, b=80))
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("No papers with valid publication years found.")
             
-            # Display dynamic filtering dashboard with better spacing and full width
-            if 'dynamic_filtering' in viz_data:
-                st.subheader("🎛️ Dynamic Filtering Dashboard")
-                st.markdown("---")
-                if viz_data['dynamic_filtering'].startswith('<'):
-                    st.markdown(viz_data['dynamic_filtering'], unsafe_allow_html=True)
+            st.markdown("---")
+            
+            # Simple tag category pie chart
+            st.subheader("📊 Tag Categories")
+            if all_tags:
+                category_counts = {'Time': 0, 'Discipline': 0, 'Memory Carrier': 0, 'Concept': 0, 'Other': 0}
+                for tag in all_tags:
+                    if tag.startswith('T'):
+                        category_counts['Time'] += 1
+                    elif tag.startswith('D'):
+                        category_counts['Discipline'] += 1
+                    elif tag.startswith('MC'):
+                        category_counts['Memory Carrier'] += 1
+                    elif tag.startswith('CT'):
+                        category_counts['Concept'] += 1
+                    else:
+                        category_counts['Other'] += 1
+                
+                # Only show categories with data
+                categories_with_data = {k: v for k, v in category_counts.items() if v > 0}
+                if categories_with_data:
+                    fig = px.pie(
+                        values=list(categories_with_data.values()),
+                        names=list(categories_with_data.keys()),
+                        title="Tag Distribution by Category"
+                    )
+                    fig.update_layout(height=400, margin=dict(l=50, r=50, t=80, b=80))
+                    st.plotly_chart(fig, use_container_width=True)
                 else:
-                    st.write(viz_data['dynamic_filtering'])
-                st.markdown("---")
-                st.markdown("")  # Extra spacing
+                    st.info("No categorized tags found.")
+            else:
+                st.info("No tags to categorize.")
+                
+        except Exception as e:
+            st.error(f"Error creating visualizations: {str(e)}")
+            st.info("Showing basic paper information instead.")
+            
+            # Fallback: Show basic paper info
+            st.subheader("📋 Paper Summary")
+            for i, paper in enumerate(papers):
+                with st.expander(f"{paper.get('title', 'Unknown')} ({paper.get('year', 'Unknown')})"):
+                    st.write(f"**Authors:** {', '.join(paper.get('authors', [])) if paper.get('authors') else 'Unknown'}")
+                    st.write(f"**Journal:** {paper.get('journal', 'Unknown')}")
+                    st.write(f"**Tags:** {', '.join(paper.get('tags', [])) if paper.get('tags') else 'None'}")
     
     def run(self):
         """Run the main application."""
