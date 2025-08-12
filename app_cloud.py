@@ -262,7 +262,6 @@ class StreamlitApp:
                     st.components.v1.html(
                         viz_data['tag_network'], 
                         height=1000, 
-                        scrolling=True,
                         key="tag_network_viz"
                     )
                 else:
@@ -278,7 +277,6 @@ class StreamlitApp:
                     st.components.v1.html(
                         viz_data['tag_distribution'], 
                         height=800, 
-                        scrolling=True,
                         key="tag_distribution_viz"
                     )
                 else:
@@ -294,7 +292,6 @@ class StreamlitApp:
                     st.components.v1.html(
                         viz_data['paper_timeline'], 
                         height=800, 
-                        scrolling=True,
                         key="paper_timeline_viz"
                     )
                 else:
@@ -310,7 +307,6 @@ class StreamlitApp:
                     st.components.v1.html(
                         viz_data['concept_cooccurrence'], 
                         height=1000, 
-                        scrolling=True,
                         key="concept_cooccurrence_viz"
                     )
                 else:
@@ -326,7 +322,6 @@ class StreamlitApp:
                     st.components.v1.html(
                         viz_data['matrix_coverage'], 
                         height=1000, 
-                        scrolling=True,
                         key="matrix_coverage_viz"
                     )
                 else:
@@ -342,7 +337,6 @@ class StreamlitApp:
                     st.components.v1.html(
                         viz_data['dynamic_filtering'], 
                         height=700, 
-                        scrolling=True,
                         key="dynamic_filtering_viz"
                     )
                 else:
