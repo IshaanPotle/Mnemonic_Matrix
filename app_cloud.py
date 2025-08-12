@@ -232,53 +232,66 @@ class StreamlitApp:
         viz_data = viz.create_visualizations(papers)
         
         if viz_data:
-            # Display tag network
+            # Display tag network with full width and better spacing
             if 'tag_network' in viz_data:
                 st.subheader("🏷️ Tag Network")
+                st.markdown("---")
                 if viz_data['tag_network'].startswith('<'):
-                    st.components.v1.html(viz_data['tag_network'], height=600)
+                    # Use full width and increase height for better visibility
+                    st.components.v1.html(viz_data['tag_network'], height=800, scrolling=True)
                 else:
                     st.write(viz_data['tag_network'])
+                st.markdown("---")
             
-            # Display tag distribution
+            # Display tag distribution with full width
             if 'tag_distribution' in viz_data:
                 st.subheader("📈 Tag Distribution")
+                st.markdown("---")
                 if viz_data['tag_distribution'].startswith('<'):
-                    st.components.v1.html(viz_data['tag_distribution'], height=500)
+                    st.components.v1.html(viz_data['tag_distribution'], height=600, scrolling=True)
                 else:
                     st.write(viz_data['tag_distribution'])
+                st.markdown("---")
             
-            # Display year distribution
+            # Display year distribution with full width
             if 'paper_timeline' in viz_data:
                 st.subheader("📅 Publication Timeline")
+                st.markdown("---")
                 if viz_data['paper_timeline'].startswith('<'):
-                    st.components.v1.html(viz_data['paper_timeline'], height=500)
+                    st.components.v1.html(viz_data['paper_timeline'], height=600, scrolling=True)
                 else:
                     st.write(viz_data['paper_timeline'])
+                st.markdown("---")
             
-            # Display concept co-occurrence matrix
+            # Display concept co-occurrence matrix with full width
             if 'concept_cooccurrence' in viz_data:
                 st.subheader("🧠 Concept Co-occurrence Matrix")
+                st.markdown("---")
                 if viz_data['concept_cooccurrence'].startswith('<'):
-                    st.components.v1.html(viz_data['concept_cooccurrence'], height=700)
+                    st.components.v1.html(viz_data['concept_cooccurrence'], height=800, scrolling=True)
                 else:
                     st.write(viz_data['concept_cooccurrence'])
+                st.markdown("---")
             
-            # Display matrix coverage visualization
+            # Display matrix coverage visualization with full width
             if 'matrix_coverage' in viz_data:
                 st.subheader("📊 Matrix Coverage Analysis")
+                st.markdown("---")
                 if viz_data['matrix_coverage'].startswith('<'):
-                    st.components.v1.html(viz_data['matrix_coverage'], height=700)
+                    st.components.v1.html(viz_data['matrix_coverage'], height=800, scrolling=True)
                 else:
                     st.write(viz_data['matrix_coverage'])
+                st.markdown("---")
             
-            # Display dynamic filtering dashboard
+            # Display dynamic filtering dashboard with full width
             if 'dynamic_filtering' in viz_data:
                 st.subheader("🎛️ Dynamic Filtering Dashboard")
+                st.markdown("---")
                 if viz_data['dynamic_filtering'].startswith('<'):
-                    st.components.v1.html(viz_data['dynamic_filtering'], height=400)
+                    st.components.v1.html(viz_data['dynamic_filtering'], height=500, scrolling=True)
                 else:
                     st.write(viz_data['dynamic_filtering'])
+                st.markdown("---")
     
     def run(self):
         """Run the main application."""
@@ -404,9 +417,11 @@ class StreamlitApp:
         if 'papers' in st.session_state and st.session_state.papers:
             papers = st.session_state.papers
             
-            # Display paper count
+            # Display paper count with better spacing
             st.header("📊 Papers Analysis")
+            st.markdown("---")
             
+            # Use full width for metrics
             col1, col2, col3 = st.columns(3)
             with col1:
                 st.metric("📚 Total Papers", len(papers))
@@ -417,10 +432,12 @@ class StreamlitApp:
                 avg_tags = total_tags / len(papers) if papers else 0
                 st.metric("📈 Avg Tags/Paper", f"{avg_tags:.1f}")
             
-            # Action buttons
+            st.markdown("---")
+            
+            # Action buttons with better spacing
             col1, col2 = st.columns(2)
             with col1:
-                if st.button("🤖 Auto-tag Papers", type="primary"):
+                if st.button("🤖 Auto-tag Papers", type="primary", use_container_width=True):
                     if self.matrix_tagger:
                         for paper in papers:
                             if not paper.get('tags'):
@@ -453,11 +470,13 @@ class StreamlitApp:
                         st.error("❌ Matrix tagger not available. Please ensure models are loaded.")
             
             with col2:
-                if st.button("🗑️ Clear All Papers"):
+                if st.button("🗑️ Clear All Papers", use_container_width=True):
                     st.session_state.papers = []
                     st.rerun()
             
-            # Tabs for different views
+            st.markdown("---")
+            
+            # Tabs for different views with better spacing
             tab1, tab2, tab3, tab4, tab5 = st.tabs([
                 "📊 Visualizations", 
                 "📋 Papers List", 
@@ -497,6 +516,7 @@ class StreamlitApp:
             
             with tab3:
                 st.subheader("🏷️ Tag Analysis")
+                st.markdown("---")
                 if papers:
                     # Collect all tags
                     all_tags = []
@@ -507,25 +527,34 @@ class StreamlitApp:
                         # Count tag frequencies
                         tag_counts = Counter(all_tags)
                         
-                        # Create bar chart
+                        # Create bar chart with full width
                         fig = px.bar(
                             x=list(tag_counts.keys()),
                             y=list(tag_counts.values()),
                             title="Tag Distribution",
                             labels={'x': 'Tags', 'y': 'Frequency'}
                         )
+                        fig.update_layout(
+                            xaxis_tickangle=-45,
+                            height=500,
+                            margin=dict(l=50, r=50, t=80, b=100)
+                        )
                         st.plotly_chart(fig, use_container_width=True)
                         
-                        # Show tag details
+                        st.markdown("---")
+                        
+                        # Show tag details with better spacing
                         col1, col2 = st.columns(2)
                         
                         with col1:
                             st.subheader("Most Common Tags")
+                            st.markdown("---")
                             for tag, count in tag_counts.most_common(10):
                                 st.write(f"**{tag}**: {count} papers")
                         
                         with col2:
                             st.subheader("Tag Categories")
+                            st.markdown("---")
                             category_counts = {}
                             for tag in all_tags:
                                 if tag.startswith('T'):
