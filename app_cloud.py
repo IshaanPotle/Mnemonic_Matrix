@@ -29,12 +29,24 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Minimal CSS - only hide Streamlit branding
+# CSS to ensure sidebar visibility and add some styling
 st.markdown("""
 <style>
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
+    
+    /* Ensure sidebar is visible */
+    .css-1d391kg {visibility: visible !important;}
+    .css-1lcbmhc {visibility: visible !important;}
+    
+    /* Make sidebar more prominent */
+    .css-1cypcdb {background-color: #f0f2f6 !important;}
+    .css-1d391kg {background-color: #f0f2f6 !important;}
+    
+    /* Ensure sidebar content is visible */
+    .css-1lcbmhc {visibility: visible !important;}
+    .css-1d391kg {visibility: visible !important;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -277,9 +289,18 @@ class StreamlitApp:
         # Timeline restriction notice
         st.info("🎯 **Timeline Restriction Active:** Timeline tags (T1-T5) are now based on **publication date only**, not the content discussed in the paper.")
         
+        # Add a visible sidebar toggle hint
+        st.sidebar.markdown("---")
+        st.sidebar.markdown("### 📱 **Sidebar Controls**")
+        st.sidebar.markdown("If you can't see the input methods below, try:")
+        st.sidebar.markdown("1. **Click the hamburger menu** (☰) in the top left")
+        st.sidebar.markdown("2. **Or use the arrow button** (▶️) to expand")
+        st.sidebar.markdown("---")
+        
         # Sidebar for input methods
         with st.sidebar:
             st.header("📥 Input Methods")
+            st.markdown("**Choose how to add papers:**")
             
             input_method = st.radio(
                 "Choose input method:",
