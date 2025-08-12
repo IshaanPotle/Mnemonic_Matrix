@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Streamlit Cloud App for Mnemonic Matrix - BibTeX Processing System
-Simplified version for guaranteed visibility
+Complete working version with sidebar fixes and fallback upload
 """
 
 import streamlit as st
@@ -47,6 +47,14 @@ st.markdown("""
     /* Ensure sidebar content is visible */
     .css-1lcbmhc {visibility: visible !important;}
     .css-1d391kg {visibility: visible !important;}
+    
+    /* Force sidebar to be visible */
+    .css-1d391kg {display: block !important;}
+    .css-1lcbmhc {display: block !important;}
+    
+    /* Make sidebar wider and more obvious */
+    .css-1d391kg {width: 300px !important;}
+    .css-1lcbmhc {width: 300px !important;}
 </style>
 """, unsafe_allow_html=True)
 
