@@ -41,8 +41,88 @@ st.markdown("""
 @st.cache_data
 def create_visualizations_cached(papers):
     """Cache the visualizations to prevent recreation."""
-    viz = Visualizer()
-    return viz.create_visualizations(papers)
+    if not papers:
+        return []
+    
+    try:
+        # Create simple Plotly visualizations directly
+        figures = []
+        
+        # 1. Tag Distribution Chart
+        all_tags = []
+        for paper in papers:
+            all_tags.extend(paper.get('tags', []))
+        
+        if all_tags:
+            tag_counts = Counter(all_tags)
+            fig1 = px.bar(
+                x=list(tag_counts.keys()),
+                y=list(tag_counts.values()),
+                title="Tag Distribution",
+                labels={'x': 'Tags', 'y': 'Frequency'}
+            )
+            fig1.update_layout(xaxis_tickangle=-45)
+            figures.append(fig1)
+            
+            # 2. Tag Categories Pie Chart
+            category_counts = {}
+            for tag in all_tags:
+                if tag.startswith('T'):
+                    category = 'Time Periods'
+                elif tag.startswith('D'):
+                    category = 'Disciplines'
+                elif tag.startswith('MC'):
+                    category = 'Memory Carriers'
+                elif tag.startswith('CT'):
+                    category = 'Concept Tags'
+                else:
+                    category = 'Other'
+                
+                category_counts[category] = category_counts.get(category, 0) + 1
+            
+            if category_counts:
+                fig2 = px.pie(
+                    values=list(category_counts.values()),
+                    names=list(category_counts.keys()),
+                    title="Tags by Category"
+                )
+                figures.append(fig2)
+        
+        # 3. Timeline Chart
+        papers_with_years = []
+        for paper in papers:
+            year = paper.get('year')
+            if year and year != 'Unknown' and str(year).isdigit():
+                try:
+                    papers_with_years.append({
+                        'title': paper.get('title', ''),
+                        'year': int(year),
+                        'tags': paper.get('tags', [])
+                    })
+                except ValueError:
+                    continue
+        
+        if papers_with_years:
+            papers_with_years.sort(key=lambda x: x['year'])
+            years = [p['year'] for p in papers_with_years]
+            titles = [p['title'][:50] + '...' if len(p['title']) > 50 else p['title'] for p in papers_with_years]
+            
+            fig3 = px.scatter(
+                x=years,
+                y=[1] * len(years),
+                text=titles,
+                title="Paper Timeline by Publication Year",
+                labels={'x': 'Publication Year', 'y': ''}
+            )
+            fig3.update_traces(textposition="top center")
+            fig3.update_layout(yaxis_showticklabels=False)
+            figures.append(fig3)
+        
+        return figures
+        
+    except Exception as e:
+        st.error(f"Error creating visualizations: {e}")
+        return []
 
 class StreamlitApp:
     """Streamlit application for BibTeX processing."""
