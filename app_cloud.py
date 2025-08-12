@@ -240,66 +240,72 @@ class StreamlitApp:
         viz_data = viz.create_visualizations(papers)
         
         if viz_data:
-            # Display tag network with full width and better spacing
+            # Display tag network with much better spacing
             if 'tag_network' in viz_data:
                 st.subheader("🏷️ Tag Network")
                 st.markdown("---")
                 if viz_data['tag_network'].startswith('<'):
-                    # Use full width and increase height for better visibility
-                    st.components.v1.html(viz_data['tag_network'], height=800, scrolling=True)
+                    # Use much larger height and full width for better visibility
+                    st.components.v1.html(viz_data['tag_network'], height=1000, scrolling=True)
                 else:
                     st.write(viz_data['tag_network'])
                 st.markdown("---")
+                st.markdown("")  # Extra spacing
             
-            # Display tag distribution with full width
+            # Display tag distribution with better spacing
             if 'tag_distribution' in viz_data:
                 st.subheader("📈 Tag Distribution")
                 st.markdown("---")
                 if viz_data['tag_distribution'].startswith('<'):
-                    st.components.v1.html(viz_data['tag_distribution'], height=600, scrolling=True)
+                    st.components.v1.html(viz_data['tag_distribution'], height=800, scrolling=True)
                 else:
                     st.write(viz_data['tag_distribution'])
                 st.markdown("---")
+                st.markdown("")  # Extra spacing
             
-            # Display year distribution with full width
+            # Display year distribution with better spacing
             if 'paper_timeline' in viz_data:
                 st.subheader("📅 Publication Timeline")
                 st.markdown("---")
                 if viz_data['paper_timeline'].startswith('<'):
-                    st.components.v1.html(viz_data['paper_timeline'], height=600, scrolling=True)
+                    st.components.v1.html(viz_data['paper_timeline'], height=800, scrolling=True)
                 else:
                     st.write(viz_data['paper_timeline'])
                 st.markdown("---")
+                st.markdown("")  # Extra spacing
             
-            # Display concept co-occurrence matrix with full width
+            # Display concept co-occurrence matrix with much better spacing
             if 'concept_cooccurrence' in viz_data:
                 st.subheader("🧠 Concept Co-occurrence Matrix")
                 st.markdown("---")
                 if viz_data['concept_cooccurrence'].startswith('<'):
-                    st.components.v1.html(viz_data['concept_cooccurrence'], height=800, scrolling=True)
+                    st.components.v1.html(viz_data['concept_cooccurrence'], height=1000, scrolling=True)
                 else:
                     st.write(viz_data['concept_cooccurrence'])
                 st.markdown("---")
+                st.markdown("")  # Extra spacing
             
-            # Display matrix coverage visualization with full width
+            # Display matrix coverage visualization with much better spacing
             if 'matrix_coverage' in viz_data:
                 st.subheader("📊 Matrix Coverage Analysis")
                 st.markdown("---")
                 if viz_data['matrix_coverage'].startswith('<'):
-                    st.components.v1.html(viz_data['matrix_coverage'], height=800, scrolling=True)
+                    st.components.v1.html(viz_data['matrix_coverage'], height=1000, scrolling=True)
                 else:
                     st.write(viz_data['matrix_coverage'])
                 st.markdown("---")
+                st.markdown("")  # Extra spacing
             
-            # Display dynamic filtering dashboard with full width
+            # Display dynamic filtering dashboard with better spacing
             if 'dynamic_filtering' in viz_data:
                 st.subheader("🎛️ Dynamic Filtering Dashboard")
                 st.markdown("---")
                 if viz_data['dynamic_filtering'].startswith('<'):
-                    st.components.v1.html(viz_data['dynamic_filtering'], height=500, scrolling=True)
+                    st.components.v1.html(viz_data['dynamic_filtering'], height=700, scrolling=True)
                 else:
                     st.write(viz_data['dynamic_filtering'])
                 st.markdown("---")
+                st.markdown("")  # Extra spacing
     
     def run(self):
         """Run the main application."""
@@ -544,12 +550,16 @@ class StreamlitApp:
                         )
                         fig.update_layout(
                             xaxis_tickangle=-45,
-                            height=500,
-                            margin=dict(l=50, r=50, t=80, b=100)
+                            height=700,  # Increased from 500
+                            margin=dict(l=80, r=80, t=100, b=120),  # Increased margins
+                            showlegend=True,
+                            plot_bgcolor='rgba(0,0,0,0)',
+                            paper_bgcolor='rgba(0,0,0,0)'
                         )
                         st.plotly_chart(fig, use_container_width=True)
                         
                         st.markdown("---")
+                        st.markdown("")  # Extra spacing
                         
                         # Show tag details with better spacing
                         col1, col2 = st.columns(2)
@@ -618,8 +628,18 @@ class StreamlitApp:
                             labels={'x': 'Publication Year', 'y': ''}
                         )
                         fig.update_traces(textposition="top center")
-                        fig.update_layout(yaxis_showticklabels=False)
+                        fig.update_layout(
+                            yaxis_showticklabels=False,
+                            height=600,  # Increased height
+                            margin=dict(l=80, r=80, t=100, b=120),  # Increased margins
+                            showlegend=True,
+                            plot_bgcolor='rgba(0,0,0,0)',
+                            paper_bgcolor='rgba(0,0,0,0)'
+                        )
                         st.plotly_chart(fig, use_container_width=True)
+                        
+                        st.markdown("---")
+                        st.markdown("")  # Extra spacing
                         
                         # Show timeline statistics
                         col1, col2 = st.columns(2)
