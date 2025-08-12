@@ -55,6 +55,19 @@ st.markdown("""
     /* Make sidebar wider and more obvious */
     .css-1d391kg {width: 300px !important;}
     .css-1lcbmhc {width: 300px !important;}
+    
+    /* Force visualizations to use full width */
+    .stHorizontalBlock {width: 100% !important;}
+    .stVerticalBlock {width: 100% !important;}
+    
+    /* Ensure HTML components use full width */
+    .stHtml {width: 100% !important; max-width: none !important;}
+    
+    /* Force main content to use full width */
+    .main .block-container {max-width: none !important; padding-left: 1rem !important; padding-right: 1rem !important;}
+    
+    /* Ensure columns use full width */
+    .row-widget.stHorizontal {width: 100% !important;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -240,68 +253,98 @@ class StreamlitApp:
         viz_data = viz.create_visualizations(papers)
         
         if viz_data:
-            # Display tag network with much better spacing
+            # Display tag network with much better spacing and full width
             if 'tag_network' in viz_data:
                 st.subheader("🏷️ Tag Network")
                 st.markdown("---")
                 if viz_data['tag_network'].startswith('<'):
-                    # Use much larger height and full width for better visibility
-                    st.components.v1.html(viz_data['tag_network'], height=1000, scrolling=True)
+                    # Use much larger height and force full width
+                    st.components.v1.html(
+                        viz_data['tag_network'], 
+                        height=1000, 
+                        scrolling=True,
+                        key="tag_network_viz"
+                    )
                 else:
                     st.write(viz_data['tag_network'])
                 st.markdown("---")
                 st.markdown("")  # Extra spacing
             
-            # Display tag distribution with better spacing
+            # Display tag distribution with better spacing and full width
             if 'tag_distribution' in viz_data:
                 st.subheader("📈 Tag Distribution")
                 st.markdown("---")
                 if viz_data['tag_distribution'].startswith('<'):
-                    st.components.v1.html(viz_data['tag_distribution'], height=800, scrolling=True)
+                    st.components.v1.html(
+                        viz_data['tag_distribution'], 
+                        height=800, 
+                        scrolling=True,
+                        key="tag_distribution_viz"
+                    )
                 else:
                     st.write(viz_data['tag_distribution'])
                 st.markdown("---")
                 st.markdown("")  # Extra spacing
             
-            # Display year distribution with better spacing
+            # Display year distribution with better spacing and full width
             if 'paper_timeline' in viz_data:
                 st.subheader("📅 Publication Timeline")
                 st.markdown("---")
                 if viz_data['paper_timeline'].startswith('<'):
-                    st.components.v1.html(viz_data['paper_timeline'], height=800, scrolling=True)
+                    st.components.v1.html(
+                        viz_data['paper_timeline'], 
+                        height=800, 
+                        scrolling=True,
+                        key="paper_timeline_viz"
+                    )
                 else:
                     st.write(viz_data['paper_timeline'])
                 st.markdown("---")
                 st.markdown("")  # Extra spacing
             
-            # Display concept co-occurrence matrix with much better spacing
+            # Display concept co-occurrence matrix with much better spacing and full width
             if 'concept_cooccurrence' in viz_data:
                 st.subheader("🧠 Concept Co-occurrence Matrix")
                 st.markdown("---")
                 if viz_data['concept_cooccurrence'].startswith('<'):
-                    st.components.v1.html(viz_data['concept_cooccurrence'], height=1000, scrolling=True)
+                    st.components.v1.html(
+                        viz_data['concept_cooccurrence'], 
+                        height=1000, 
+                        scrolling=True,
+                        key="concept_cooccurrence_viz"
+                    )
                 else:
                     st.write(viz_data['concept_cooccurrence'])
                 st.markdown("---")
                 st.markdown("")  # Extra spacing
             
-            # Display matrix coverage visualization with much better spacing
+            # Display matrix coverage visualization with much better spacing and full width
             if 'matrix_coverage' in viz_data:
                 st.subheader("📊 Matrix Coverage Analysis")
                 st.markdown("---")
                 if viz_data['matrix_coverage'].startswith('<'):
-                    st.components.v1.html(viz_data['matrix_coverage'], height=1000, scrolling=True)
+                    st.components.v1.html(
+                        viz_data['matrix_coverage'], 
+                        height=1000, 
+                        scrolling=True,
+                        key="matrix_coverage_viz"
+                    )
                 else:
                     st.write(viz_data['matrix_coverage'])
                 st.markdown("---")
                 st.markdown("")  # Extra spacing
             
-            # Display dynamic filtering dashboard with better spacing
+            # Display dynamic filtering dashboard with better spacing and full width
             if 'dynamic_filtering' in viz_data:
                 st.subheader("🎛️ Dynamic Filtering Dashboard")
                 st.markdown("---")
                 if viz_data['dynamic_filtering'].startswith('<'):
-                    st.components.v1.html(viz_data['dynamic_filtering'], height=700, scrolling=True)
+                    st.components.v1.html(
+                        viz_data['dynamic_filtering'], 
+                        height=700, 
+                        scrolling=True,
+                        key="dynamic_filtering_viz"
+                    )
                 else:
                     st.write(viz_data['dynamic_filtering'])
                 st.markdown("---")
