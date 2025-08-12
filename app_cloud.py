@@ -258,12 +258,8 @@ class StreamlitApp:
                 st.subheader("🏷️ Tag Network")
                 st.markdown("---")
                 if viz_data['tag_network'].startswith('<'):
-                    # Use much larger height and force full width
-                    st.components.v1.html(
-                        viz_data['tag_network'], 
-                        height=1000, 
-                        key="tag_network_viz"
-                    )
+                    # Use markdown instead of HTML component to avoid compatibility issues
+                    st.markdown(viz_data['tag_network'], unsafe_allow_html=True)
                 else:
                     st.write(viz_data['tag_network'])
                 st.markdown("---")
@@ -274,11 +270,7 @@ class StreamlitApp:
                 st.subheader("📈 Tag Distribution")
                 st.markdown("---")
                 if viz_data['tag_distribution'].startswith('<'):
-                    st.components.v1.html(
-                        viz_data['tag_distribution'], 
-                        height=800, 
-                        key="tag_distribution_viz"
-                    )
+                    st.markdown(viz_data['tag_distribution'], unsafe_allow_html=True)
                 else:
                     st.write(viz_data['tag_distribution'])
                 st.markdown("---")
@@ -289,11 +281,7 @@ class StreamlitApp:
                 st.subheader("📅 Publication Timeline")
                 st.markdown("---")
                 if viz_data['paper_timeline'].startswith('<'):
-                    st.components.v1.html(
-                        viz_data['paper_timeline'], 
-                        height=800, 
-                        key="paper_timeline_viz"
-                    )
+                    st.markdown(viz_data['paper_timeline'], unsafe_allow_html=True)
                 else:
                     st.write(viz_data['paper_timeline'])
                 st.markdown("---")
@@ -304,11 +292,7 @@ class StreamlitApp:
                 st.subheader("🧠 Concept Co-occurrence Matrix")
                 st.markdown("---")
                 if viz_data['concept_cooccurrence'].startswith('<'):
-                    st.components.v1.html(
-                        viz_data['concept_cooccurrence'], 
-                        height=1000, 
-                        key="concept_cooccurrence_viz"
-                    )
+                    st.markdown(viz_data['concept_cooccurrence'], unsafe_allow_html=True)
                 else:
                     st.write(viz_data['concept_cooccurrence'])
                 st.markdown("---")
@@ -319,11 +303,7 @@ class StreamlitApp:
                 st.subheader("📊 Matrix Coverage Analysis")
                 st.markdown("---")
                 if viz_data['matrix_coverage'].startswith('<'):
-                    st.components.v1.html(
-                        viz_data['matrix_coverage'], 
-                        height=1000, 
-                        key="matrix_coverage_viz"
-                    )
+                    st.markdown(viz_data['matrix_coverage'], unsafe_allow_html=True)
                 else:
                     st.write(viz_data['matrix_coverage'])
                 st.markdown("---")
@@ -334,11 +314,7 @@ class StreamlitApp:
                 st.subheader("🎛️ Dynamic Filtering Dashboard")
                 st.markdown("---")
                 if viz_data['dynamic_filtering'].startswith('<'):
-                    st.components.v1.html(
-                        viz_data['dynamic_filtering'], 
-                        height=700, 
-                        key="dynamic_filtering_viz"
-                    )
+                    st.markdown(viz_data['dynamic_filtering'], unsafe_allow_html=True)
                 else:
                     st.write(viz_data['dynamic_filtering'])
                 st.markdown("---")
