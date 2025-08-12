@@ -301,6 +301,25 @@ class StreamlitApp:
         
         st.markdown("---")
         
+        # FALLBACK: Add upload functionality directly on main page in case sidebar is hidden
+        st.header("📥 **FALLBACK UPLOAD SECTION** (If sidebar is hidden)")
+        st.warning("**If you can't see the sidebar on the left, use this section instead:**")
+        
+        # Direct file upload on main page
+        st.subheader("📁 Upload BibTeX File")
+        uploaded_file_main = st.file_uploader("Choose a BibTeX file (Main Page)", type=['bib'], key="main_page_uploader")
+        
+        if uploaded_file_main is not None:
+            content = uploaded_file_main.read().decode('utf-8')
+            papers = self.process_bibtex_content(content)
+            if papers:
+                st.session_state.papers = papers
+                st.success(f"✅ Added {len(papers)} papers successfully!")
+            else:
+                st.error("❌ Failed to process BibTeX file.")
+        
+        st.markdown("---")
+        
         # Force sidebar to be visible with a very prominent header
         st.sidebar.markdown("## 🚨 **SIDEBAR IS HERE!** 🚨")
         st.sidebar.markdown("### 📱 **Sidebar Controls**")
