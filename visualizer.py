@@ -50,6 +50,27 @@ class Visualizer:
         except Exception as e:
             visualizations['paper_timeline'] = f"<p>Error creating paper timeline: {str(e)}</p>"
         
+        # Create concept co-occurrence matrix
+        try:
+            cooccurrence_html = self._create_concept_cooccurrence_matrix(papers)
+            visualizations['concept_cooccurrence'] = cooccurrence_html
+        except Exception as e:
+            visualizations['concept_cooccurrence'] = f"<p>Error creating co-occurrence matrix: {str(e)}</p>"
+        
+        # Create matrix coverage visualization
+        try:
+            coverage_html = self._create_matrix_coverage_visualization(papers)
+            visualizations['matrix_coverage'] = coverage_html
+        except Exception as e:
+            visualizations['matrix_coverage'] = f"<p>Error creating matrix coverage: {str(e)}</p>"
+        
+        # Create dynamic filtering dashboard
+        try:
+            filtering_html = self._create_dynamic_filtering_dashboard(papers)
+            visualizations['dynamic_filtering'] = filtering_html
+        except Exception as e:
+            visualizations['dynamic_filtering'] = f"<p>Error creating filtering dashboard: {str(e)}</p>"
+        
         return visualizations
     
     def _create_tag_network(self, papers: List[Dict]) -> str:
@@ -1008,6 +1029,172 @@ class Visualizer:
         
         return full_html + controls_html
     
+    def _create_concept_cooccurrence_matrix(self, papers: List[Dict]) -> str:
+        """Create an interactive concept co-occurrence matrix visualization."""
+        # Collect all tags and their frequencies
+        tag_counts = Counter()
+        for paper in papers:
+            tag_counts.update(paper.get('tags', []))
+        
+        if not tag_counts:
+            return "<p>No tags found in the papers.</p>"
+        
+        # Get top tags for matrix (limit to 20 for readability)
+        top_tags = [tag for tag, count in tag_counts.most_common(20)]
+        
+        # Create co-occurrence matrix
+        cooccurrence_matrix = []
+        for tag1 in top_tags:
+            row = []
+            for tag2 in top_tags:
+                if tag1 == tag2:
+                    # Diagonal: self-occurrence (frequency)
+                    row.append(tag_counts[tag1])
+                else:
+                    # Off-diagonal: co-occurrence count
+                    co_occurrence = 0
+                    for paper in papers:
+                        paper_tags = paper.get('tags', [])
+                        if tag1 in paper_tags and tag2 in paper_tags:
+                            co_occurrence += 1
+                    row.append(co_occurrence)
+            cooccurrence_matrix.append(row)
+        
+        # Create color mapping based on tag categories
+        matrix_categories = {
+            'time': ['T1', 'T2', 'T3', 'T4', 'T5'],
+            'discipline': ['DSOC', 'DHIS', 'DSPY', 'DNEU', 'DPOL', 'DANT', 'DGEO', 
+                          'DARC', 'DLIT', 'DCUL', 'DLAW', 'DPHI', 'DPSY', 'DMED', 
+                          'DEDU', 'DHUM', 'DSS', 'DMU', 'DHE', 'DAR'],
+            'memory_carrier': ['MCSO', 'MCLI', 'MCFI', 'MCT', 'MCAR', 'MCPH', 'MCC', 
+                              'MCMO', 'MCA', 'MCB', 'MCME', 'MCLA', 'MCED', 'MCMU', 
+                              'MCF', 'MCT', 'MCNAT'],
+            'concept_tags': ['CTArchives', 'CTAutobiographicalMemory', 'CTAgonisticMemory', 'CTAmnesia', 'CTAestheticMemory',
+                            'CTBanalMnemonics', 'CTCanons', 'CTCommunicativeMemory', 'CTCulturalTrauma', 'CTCollectiveMemory', 
+                            'CTCulturalMemory', 'CTCosmopolitanMemory', 'CTCommemoration', 'CTCatastrophicMemory', 'CTCounterMemory',
+                            'CTDialogical', 'CTDeclarativeMemory', 'CTDigitalMemory', 'CTDutyToRemember', 'CTEngrams', 
+                            'CTEpisodicMemory', 'CTExplicitMemory', 'CTEntangledMemory', 'CTFamilyMemory', 'CTFlashbulbMemory', 
+                            'CTFlashback', 'CTForgetting', 'CTForgettingCurve', 'CTFalseMemory', 'CTGenreMemory', 'CTGlobitalMemory', 
+                            'CTGlobalMemory', 'CTGenerationalMemory', 'CTHeritage', 'CTHistoricalMemory', 'CTHyperthymesia',
+                            'CTIdentity', 'CTImplicitMemory', 'CTIntergenerationalTransmissions', 'CTIconicMemory', 'CTImaginativeReconstruction',
+                            'CTLongueDuree', 'CTMultidirectionalMemory', 'CTMnemonicSecurity', 'CTMilieuDeMemoire', 'CTMemoryLaws', 
+                            'CTMnemohistory', 'CTMemoryConsolidation', 'CTMemoryRetrieval', 'CTMemoryEncoding', 'CTMemoryStorage', 
+                            'CTMemoryTrace', 'CTMemorySpan', 'CTMemoryDistortion', 'CTMemoryAccuracy', 'CTMemoryBias', 'CTMemoryEnhancement',
+                            'CTMemorySuppression', 'CTMemorySchemas', 'CTMnemonics', 'CTMemoryPolitics', 'CTMnemonicCommunities',
+                            'CTMnemonicSocialization', 'CTMemoryEthics', 'CTMemoryPractices', 'CTMnemonicStandoff', 'CTNationalMemory', 
+                            'CTNonContemporaneity', 'CTOfficialMemory', 'CTParticularism', 'CTPrivateMemory', 'CTPublicMemory', 
+                            'CTPathDependency', 'CTProceduralMemory', 'CTProstheticMemory', 'CTPostColonialMemory', 'CTProspectiveMemory', 
+                            'CTProfaneMemory', 'CTPostMemory', 'CTRealmsOfMemory', 'CTRegret', 'CTRestitution', 'CTReparations', 
+                            'CTRedress', 'CTRepressedMemory', 'CTRecoveredMemory', 'CTRetrospectiveMemory', 'CTRevisionistMemory', 
+                            'CTReligiousMemory', 'CTSemanticMemory', 'CTSocialFrameworks', 'CTSlowMemory', 'CTSocialMemory', 
+                            'CTScreenMemory', 'CTSensoryMemory', 'CTSourceMemory', 'CTSacredMemory', 'CTTrauma', 'CTTradition', 
+                            'CTTravellingMemory', 'CTTransnationalMemory', 'CTTransculturalMemory', 'CTTransoceanicMemory', 
+                            'CTUniversalism', 'CTVernacularMemory', 'CTWorkingMemory']
+        }
+        
+        # Create color mapping for tags
+        tag_colors = []
+        for tag in top_tags:
+            if tag in matrix_categories['time']:
+                tag_colors.append('#FF6B9D')  # Pink for time
+            elif tag in matrix_categories['discipline']:
+                tag_colors.append('#4ECDC4')  # Teal for discipline
+            elif tag in matrix_categories['memory_carrier']:
+                tag_colors.append('#45B7D1')  # Blue for memory carriers
+            elif tag in matrix_categories['concept_tags']:
+                tag_colors.append('#F7DC6F')  # Yellow for concepts
+            else:
+                tag_colors.append('#95a5a6')  # Gray for others
+        
+        # Create the heatmap
+        fig = go.Figure(data=go.Heatmap(
+            z=cooccurrence_matrix,
+            x=top_tags,
+            y=top_tags,
+            colorscale='Viridis',
+            hoverongaps=False,
+            hovertemplate='<b>%{y} ↔ %{x}</b><br>Co-occurrence: %{z}<extra></extra>'
+        ))
+        
+        fig.update_layout(
+            title={
+                'text': '🧠 Concept Co-occurrence Matrix',
+                'x': 0.5,
+                'xanchor': 'center',
+                'font': {'size': 18, 'color': '#E8E8E8'}
+            },
+            xaxis=dict(
+                title=dict(text='Tags', font=dict(color='#E8E8E8')),
+                tickangle=45,
+                tickfont=dict(size=10, color='#E8E8E8'),
+                gridcolor='rgba(255,255,255,0.1)',
+                zerolinecolor='rgba(255,255,255,0.2)',
+                tickcolor='#E8E8E8'
+            ),
+            yaxis=dict(
+                title=dict(text='Tags', font=dict(color='#E8E8E8')),
+                tickfont=dict(color='#E8E8E8'),
+                gridcolor='rgba(255,255,255,0.1)',
+                zerolinecolor='rgba(255,255,255,0.2)',
+                tickcolor='#E8E8E8'
+            ),
+            plot_bgcolor='#1A1A1A',
+            paper_bgcolor='#0F0F0F',
+            margin=dict(l=50, r=50, t=80, b=100),
+            height=600,
+            coloraxis=dict(
+                colorbar=dict(
+                    title=dict(text='Co-occurrence Count', font=dict(color='#E8E8E8')),
+                    tickfont=dict(color='#E8E8E8'),
+                    outlinecolor='rgba(255,255,255,0.2)',
+                    outlinewidth=1
+                )
+            )
+        )
+        
+        # Add category legend
+        legend_html = """
+        <div style="background-color: #1A1A1A; padding: 15px; border-radius: 8px; margin-top: 20px; color: #E8E8E8;">
+            <h4 style="color: #FF6B9D; margin-bottom: 15px;">📊 Matrix Interpretation</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div style="background-color: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px;">
+                    <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                        <div style="width: 15px; height: 15px; background-color: #FF6B9D; border-radius: 3px; margin-right: 8px;"></div>
+                        <span style="font-weight: bold;">⏰ Time Periods</span>
+                    </div>
+                    <div style="font-size: 12px; color: #B0B0B0;">T1-T5 tags</div>
+                </div>
+                <div style="background-color: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px;">
+                    <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                        <div style="width: 15px; height: 15px; background-color: #4ECDC4; border-radius: 3px; margin-right: 8px;"></div>
+                        <span style="font-weight: bold;">🎓 Academic Disciplines</span>
+                    </div>
+                    <div style="font-size: 12px; color: #B0B0B0;">DSOC, DHIS, etc.</div>
+                </div>
+                <div style="background-color: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px;">
+                    <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                        <div style="width: 15px; height: 15px; background-color: #45B7D1; border-radius: 3px; margin-right: 8px;"></div>
+                        <span style="font-weight: bold;">🏛️ Memory Carriers</span>
+                    </div>
+                    <div style="font-size: 12px; color: #B0B0B0;">MCSO, MCLI, etc.</div>
+                </div>
+                <div style="background-color: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px;">
+                    <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                        <div style="width: 15px; height: 15px; background-color: #F7DC6F; border-radius: 3px; margin-right: 8px;"></div>
+                        <span style="font-weight: bold;">🧠 Memory Concepts</span>
+                    </div>
+                    <div style="font-size: 12px; color: #B0B0B0;">CTArchives, CTMemory, etc.</div>
+                </div>
+            </div>
+            <div style="margin-top: 15px; padding: 10px; background-color: rgba(255,255,255,0.05); border-radius: 5px;">
+                <span style="color: #FF6B9D; font-weight: bold;">💡 Insight:</span> 
+                Darker cells indicate stronger co-occurrence between concepts. Diagonal values show individual tag frequencies.
+            </div>
+        </div>
+        """
+        
+        return fig.to_html(include_plotlyjs=True, full_html=False) + legend_html
+    
     def _force_directed_layout(self, adjacency_matrix, n_iterations=300):
         """Generate force-directed layout positions for nodes with enhanced spacing and collision detection."""
         import numpy as np
@@ -1393,3 +1580,411 @@ class Visualizer:
         
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write(dashboard_html)
+    
+    def _create_matrix_coverage_visualization(self, papers: List[Dict]) -> str:
+        """Create a matrix coverage visualization showing research gaps and opportunities."""
+        # Define the complete matrix structure
+        matrix_categories = {
+            'time': {
+                'name': '⏰ Time Periods',
+                'tags': ['T1', 'T2', 'T3', 'T4', 'T5'],
+                'color': '#FF6B9D'
+            },
+            'discipline': {
+                'name': '🎓 Academic Disciplines', 
+                'tags': ['DSOC', 'DHIS', 'DSPY', 'DNEU', 'DPOL', 'DANT', 'DGEO', 
+                         'DARC', 'DLIT', 'DCUL', 'DLAW', 'DPHI', 'DPSY', 'DMED', 
+                         'DEDU', 'DHUM', 'DSS', 'DMU', 'DHE', 'DAR'],
+                'color': '#4ECDC4'
+            },
+            'memory_carrier': {
+                'name': '🏛️ Memory Carriers',
+                'tags': ['MCSO', 'MCLI', 'MCFI', 'MCT', 'MCAR', 'MCPH', 'MCC', 
+                         'MCMO', 'MCA', 'MCB', 'MCME', 'MCLA', 'MCED', 'MCMU', 
+                         'MCF', 'MCT', 'MCNAT'],
+                'color': '#45B7D1'
+            },
+            'concept_tags': {
+                'name': '🧠 Memory Concepts',
+                'tags': ['CTArchives', 'CTAutobiographicalMemory', 'CTAgonisticMemory', 'CTAmnesia', 'CTAestheticMemory',
+                         'CTBanalMnemonics', 'CTCanons', 'CTCommunicativeMemory', 'CTCulturalTrauma', 'CTCollectiveMemory', 
+                         'CTCulturalMemory', 'CTCosmopolitanMemory', 'CTCommemoration', 'CTCatastrophicMemory', 'CTCounterMemory',
+                         'CTDialogical', 'CTDeclarativeMemory', 'CTDigitalMemory', 'CTDutyToRemember', 'CTEngrams', 
+                         'CTEpisodicMemory', 'CTExplicitMemory', 'CTEntangledMemory', 'CTFamilyMemory', 'CTFlashbulbMemory', 
+                         'CTFlashback', 'CTForgetting', 'CTForgettingCurve', 'CTFalseMemory', 'CTGenreMemory', 'CTGlobitalMemory', 
+                         'CTGlobalMemory', 'CTGenerationalMemory', 'CTHeritage', 'CTHistoricalMemory', 'CTHyperthymesia',
+                         'CTIdentity', 'CTImplicitMemory', 'CTIntergenerationalTransmissions', 'CTIconicMemory', 'CTImaginativeReconstruction',
+                         'CTLongueDuree', 'CTMultidirectionalMemory', 'CTMnemonicSecurity', 'CTMilieuDeMemoire', 'CTMemoryLaws', 
+                         'CTMnemohistory', 'CTMemoryConsolidation', 'CTMemoryRetrieval', 'CTMemoryEncoding', 'CTMemoryStorage', 
+                         'CTMemoryTrace', 'CTMemorySpan', 'CTMemoryDistortion', 'CTMemoryAccuracy', 'CTMemoryBias', 'CTMemoryEnhancement',
+                         'CTMemorySuppression', 'CTMemorySchemas', 'CTMnemonics', 'CTMemoryPolitics', 'CTMnemonicCommunities',
+                         'CTMnemonicSocialization', 'CTMemoryEthics', 'CTMemoryPractices', 'CTMnemonicStandoff', 'CTNationalMemory', 
+                         'CTNonContemporaneity', 'CTOfficialMemory', 'CTParticularism', 'CTPrivateMemory', 'CTPublicMemory', 
+                         'CTPathDependency', 'CTProceduralMemory', 'CTProstheticMemory', 'CTPostColonialMemory', 'CTProspectiveMemory', 
+                         'CTProfaneMemory', 'CTPostMemory', 'CTRealmsOfMemory', 'CTRegret', 'CTRestitution', 'CTReparations', 
+                         'CTRedress', 'CTRepressedMemory', 'CTRecoveredMemory', 'CTRetrospectiveMemory', 'CTRevisionistMemory', 
+                         'CTReligiousMemory', 'CTSemanticMemory', 'CTSocialFrameworks', 'CTSlowMemory', 'CTSocialMemory', 
+                         'CTScreenMemory', 'CTSensoryMemory', 'CTSourceMemory', 'CTSacredMemory', 'CTTrauma', 'CTTradition', 
+                         'CTTravellingMemory', 'CTTransnationalMemory', 'CTTransculturalMemory', 'CTTransoceanicMemory', 
+                         'CTUniversalism', 'CTVernacularMemory', 'CTWorkingMemory'],
+                'color': '#F7DC6F'
+            }
+        }
+        
+        # Collect all used tags
+        used_tags = set()
+        for paper in papers:
+            used_tags.update(paper.get('tags', []))
+        
+        # Calculate coverage statistics
+        coverage_data = []
+        total_possible = 0
+        total_used = 0
+        
+        for cat_name, cat_info in matrix_categories.items():
+            category_tags = set(cat_info['tags'])
+            used_category_tags = category_tags.intersection(used_tags)
+            coverage_percentage = len(used_category_tags) / len(category_tags) * 100
+            
+            total_possible += len(category_tags)
+            total_used += len(used_category_tags)
+            
+            coverage_data.append({
+                'category': cat_info['name'],
+                'used': len(used_category_tags),
+                'total': len(category_tags),
+                'coverage': coverage_percentage,
+                'color': cat_info['color'],
+                'missing': len(category_tags) - len(used_category_tags)
+            })
+        
+        overall_coverage = (total_used / total_possible) * 100 if total_possible > 0 else 0
+        
+        # Create treemap visualization
+        fig = go.Figure(go.Treemap(
+            labels=[f"{item['category']}<br>({item['used']}/{item['total']})" for item in coverage_data],
+            parents=[''] * len(coverage_data),
+            values=[item['coverage'] for item in coverage_data],
+            textinfo="label+value",
+            hovertemplate='<b>%{label}</b><br>Coverage: %{value:.1f}%<br>Used: %{customdata[0]}/{item["total"]}<br>Missing: %{customdata[1]}<extra></extra>',
+            customdata=[[item['used'], item['missing']] for item in coverage_data],
+            marker=dict(
+                colors=[item['color'] for item in coverage_data],
+                line=dict(width=2, color='white')
+            )
+        ))
+        
+        fig.update_layout(
+            title={
+                'text': f'📊 Matrix Coverage Analysis (Overall: {overall_coverage:.1f}%)',
+                'x': 0.5,
+                'xanchor': 'center',
+                'font': {'size': 18, 'color': '#E8E8E8'}
+            },
+            plot_bgcolor='#1A1A1A',
+            paper_bgcolor='#0F0F0F',
+            margin=dict(l=20, r=20, t=80, b=20),
+            height=500
+        )
+        
+        # Create detailed coverage breakdown
+        breakdown_html = f"""
+        <div style="background-color: #1A1A1A; padding: 20px; border-radius: 8px; margin-top: 20px; color: #E8E8E8;">
+            <h4 style="color: #FF6B9D; margin-bottom: 20px;">📈 Detailed Coverage Breakdown</h4>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 20px;">
+        """
+        
+        for item in coverage_data:
+            progress_width = item['coverage']
+            breakdown_html += f"""
+                <div style="background-color: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; border-left: 4px solid {item['color']};">
+                    <h5 style="color: {item['color']}; margin-bottom: 10px;">{item['category']}</h5>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span>Coverage: {item['coverage']:.1f}%</span>
+                        <span>{item['used']}/{item['total']} tags</span>
+                    </div>
+                    <div style="background-color: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden;">
+                        <div style="background-color: {item['color']}; height: 100%; width: {progress_width}%; transition: width 0.3s ease;"></div>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 12px; color: #B0B0B0;">
+                        Missing: {item['missing']} tags
+                    </div>
+                </div>
+            """
+        
+        breakdown_html += """
+            </div>
+            
+            <div style="background-color: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;">
+                <h5 style="color: #4ECDC4; margin-bottom: 10px;">🎯 Research Opportunities</h5>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+        """
+        
+        # Find categories with lowest coverage
+        sorted_coverage = sorted(coverage_data, key=lambda x: x['coverage'])
+        for item in sorted_coverage[:3]:
+            if item['missing'] > 0:
+                breakdown_html += f"""
+                    <div style="background-color: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px;">
+                        <div style="color: {item['color']}; font-weight: bold;">{item['category']}</div>
+                        <div style="font-size: 12px; color: #B0B0B0;">{item['missing']} unexplored tags</div>
+                    </div>
+                """
+        
+        breakdown_html += """
+                </div>
+            </div>
+        </div>
+        """
+        
+        return fig.to_html(include_plotlyjs=True, full_html=False) + breakdown_html
+    
+    def _create_dynamic_filtering_dashboard(self, papers: List[Dict]) -> str:
+        """Create a dynamic filtering dashboard with real-time updates."""
+        # Collect all unique tags and categories
+        all_tags = set()
+        tag_categories = {}
+        for paper in papers:
+            for tag in paper.get('tags', []):
+                all_tags.add(tag)
+                # Determine category for each tag
+                if tag.startswith('T'):
+                    tag_categories[tag] = 'time'
+                elif tag.startswith('D'):
+                    tag_categories[tag] = 'discipline'
+                elif tag.startswith('MC'):
+                    tag_categories[tag] = 'memory_carrier'
+                elif tag.startswith('CT'):
+                    tag_categories[tag] = 'concept_tags'
+                else:
+                    tag_categories[tag] = 'other'
+        
+        # Get years for filtering
+        years = set()
+        for paper in papers:
+            year = paper.get('year', 'Unknown')
+            if year != 'Unknown':
+                years.add(year)
+        years = sorted(list(years))
+        
+        # Create the filtering dashboard
+        dashboard_html = f"""
+        <div style="background-color: #1A1A1A; padding: 20px; border-radius: 8px; color: #E8E8E8;">
+            <h4 style="color: #FF6B9D; margin-bottom: 20px;">🎛️ Dynamic Filtering Dashboard</h4>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px;">
+                
+                <!-- Category Filter -->
+                <div style="background-color: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;">
+                    <h5 style="color: #4ECDC4; margin-bottom: 10px;">📂 Filter by Category</h5>
+                    <select id="categoryFilter" style="width: 100%; padding: 8px; background-color: #2A2A2A; color: #E8E8E8; border: 1px solid #444; border-radius: 4px;">
+                        <option value="all">All Categories</option>
+                        <option value="time">⏰ Time Periods</option>
+                        <option value="discipline">🎓 Academic Disciplines</option>
+                        <option value="memory_carrier">🏛️ Memory Carriers</option>
+                        <option value="concept_tags">🧠 Memory Concepts</option>
+                    </select>
+                </div>
+                
+                <!-- Year Filter -->
+                <div style="background-color: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;">
+                    <h5 style="color: #F7DC6F; margin-bottom: 10px;">📅 Filter by Year</h5>
+                    <select id="yearFilter" style="width: 100%; padding: 8px; background-color: #2A2A2A; color: #E8E8E8; border: 1px solid #444; border-radius: 4px;">
+                        <option value="all">All Years</option>
+        """
+        
+        for year in years:
+            dashboard_html += f'<option value="{year}">{year}</option>'
+        
+        dashboard_html += """
+                    </select>
+                </div>
+                
+                <!-- Tag Filter -->
+                <div style="background-color: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;">
+                    <h5 style="color: #45B7D1; margin-bottom: 10px;">🏷️ Filter by Tag</h5>
+                    <select id="tagFilter" style="width: 100%; padding: 8px; background-color: #2A2A2A; color: #E8E8E8; border: 1px solid #444; border-radius: 4px;">
+                        <option value="all">All Tags</option>
+        """
+        
+        # Add tag options
+        for tag in sorted(all_tags):
+            category = tag_categories.get(tag, 'other')
+            category_icon = {
+                'time': '⏰',
+                'discipline': '🎓',
+                'memory_carrier': '🏛️',
+                'concept_tags': '🧠',
+                'other': '📌'
+            }.get(category, '📌')
+            dashboard_html += f'<option value="{tag}">{category_icon} {tag}</option>'
+        
+        dashboard_html += """
+                    </select>
+                </div>
+                
+                <!-- Frequency Filter -->
+                <div style="background-color: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;">
+                    <h5 style="color: #FF6B9D; margin-bottom: 10px;">📊 Min Frequency</h5>
+                    <input type="range" id="frequencyFilter" min="1" max="10" value="1" style="width: 100%;">
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: #B0B0B0;">
+                        <span>1</span>
+                        <span id="frequencyValue">1</span>
+                        <span>10+</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button id="applyFilters" style="padding: 10px 20px; background-color: #4ECDC4; color: white; border: none; border-radius: 4px; cursor: pointer;">Apply Filters</button>
+                <button id="clearFilters" style="padding: 10px 20px; background-color: #FF6B9D; color: white; border: none; border-radius: 4px; cursor: pointer;">Clear All</button>
+                <button id="exportFiltered" style="padding: 10px 20px; background-color: #F7DC6F; color: black; border: none; border-radius: 4px; cursor: pointer;">Export Filtered</button>
+            </div>
+            
+            <!-- Results Summary -->
+            <div id="filterResults" style="background-color: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;">
+                <h5 style="color: #E8E8E8; margin-bottom: 10px;">📈 Filter Results</h5>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; color: #4ECDC4; font-weight: bold;" id="filteredPapers">0</div>
+                        <div style="font-size: 12px; color: #B0B0B0;">Papers</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; color: #FF6B9D; font-weight: bold;" id="filteredTags">0</div>
+                        <div style="font-size: 12px; color: #B0B0B0;">Tags</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; color: #F7DC6F; font-weight: bold;" id="filteredYears">0</div>
+                        <div style="font-size: 12px; color: #B0B0B0;">Years</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; color: #45B7D1; font-weight: bold;" id="avgTagsPerPaper">0.0</div>
+                        <div style="font-size: 12px; color: #B0B0B0;">Avg Tags/Paper</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+        // Store papers data for filtering
+        const papersData = {json.dumps([{
+            'id': paper.get('id', f'paper_{i}'),
+            'title': paper.get('title', 'Unknown'),
+            'authors': paper.get('authors', []),
+            'year': paper.get('year', 'Unknown'),
+            'tags': paper.get('tags', []),
+            'abstract': paper.get('abstract', '')
+        } for i, paper in enumerate(papers)])};
+        
+        let filteredPapers = [...papersData];
+        
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {{
+            updateFilterResults();
+            
+            // Event listeners
+            document.getElementById('applyFilters').addEventListener('click', applyFilters);
+            document.getElementById('clearFilters').addEventListener('click', clearFilters);
+            document.getElementById('exportFiltered').addEventListener('click', exportFilteredData);
+            document.getElementById('frequencyFilter').addEventListener('input', function() {{
+                document.getElementById('frequencyValue').textContent = this.value;
+            }});
+        }});
+        
+        function applyFilters() {{
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const yearFilter = document.getElementById('yearFilter').value;
+            const tagFilter = document.getElementById('tagFilter').value;
+            const frequencyFilter = parseInt(document.getElementById('frequencyFilter').value);
+            
+            console.log('Applying filters:', {{categoryFilter, yearFilter, tagFilter, frequencyFilter}});
+            
+            filteredPapers = papersData.filter(paper => {{
+                // Category filter
+                if (categoryFilter !== 'all') {{
+                    const hasCategoryTag = paper.tags.some(tag => {{
+                        if (categoryFilter === 'time') return tag.startsWith('T');
+                        if (categoryFilter === 'discipline') return tag.startsWith('D');
+                        if (categoryFilter === 'memory_carrier') return tag.startsWith('MC');
+                        if (categoryFilter === 'concept_tags') return tag.startsWith('CT');
+                        return false;
+                    }});
+                    if (!hasCategoryTag) return false;
+                }}
+                
+                // Year filter
+                if (yearFilter !== 'all' && paper.year !== yearFilter) {{
+                    return false;
+                }}
+                
+                // Tag filter
+                if (tagFilter !== 'all' && !paper.tags.includes(tagFilter)) {{
+                    return false;
+                }}
+                
+                // Frequency filter (minimum number of tags)
+                if (paper.tags.length < frequencyFilter) {{
+                    return false;
+                }}
+                
+                return true;
+            }});
+            
+            console.log('Filtered papers:', filteredPapers.length);
+            updateFilterResults();
+            updateVisualizations();
+        }}
+        
+        function clearFilters() {{
+            document.getElementById('categoryFilter').value = 'all';
+            document.getElementById('yearFilter').value = 'all';
+            document.getElementById('tagFilter').value = 'all';
+            document.getElementById('frequencyFilter').value = 1;
+            document.getElementById('frequencyValue').textContent = '1';
+            
+            filteredPapers = [...papersData];
+            updateFilterResults();
+            updateVisualizations();
+        }}
+        
+        function updateFilterResults() {{
+            const uniqueTags = new Set();
+            const uniqueYears = new Set();
+            let totalTags = 0;
+            
+            filteredPapers.forEach(paper => {{
+                paper.tags.forEach(tag => uniqueTags.add(tag));
+                if (paper.year !== 'Unknown') uniqueYears.add(paper.year);
+                totalTags += paper.tags.length;
+            }});
+            
+            const avgTagsPerPaper = filteredPapers.length > 0 ? (totalTags / filteredPapers.length).toFixed(1) : '0.0';
+            
+            document.getElementById('filteredPapers').textContent = filteredPapers.length;
+            document.getElementById('filteredTags').textContent = uniqueTags.size;
+            document.getElementById('filteredYears').textContent = uniqueYears.size;
+            document.getElementById('avgTagsPerPaper').textContent = avgTagsPerPaper;
+        }}
+        
+        function updateVisualizations() {{
+            // This would update all visualizations with filtered data
+            console.log('Updating visualizations with filtered data:', filteredPapers.length, 'papers');
+            // In a full implementation, this would trigger re-rendering of all charts
+        }}
+        
+        function exportFilteredData() {{
+            const dataStr = JSON.stringify(filteredPapers, null, 2);
+            const dataBlob = new Blob([dataStr], {{type: 'application/json'}});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'filtered_papers.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        }}
+        </script>
+        """
+        
+        return dashboard_html

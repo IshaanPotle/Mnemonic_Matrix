@@ -980,6 +980,59 @@ class BibTeXMatrixTagger:
         print(f"  Total matrix tags: {total_tags}")
         print(f"  Average tags per paper: {total_tags/total_papers:.1f}" if total_papers > 0 else "  Average tags per paper: 0")
 
+    def predict_time_period_from_publication_date(self, publication_year: int) -> str:
+        """
+        Predict time period based ONLY on publication date, not content analysis.
+        This addresses the professors' request to restrict timeline tags to publication date.
+        
+        Args:
+            publication_year (int): The year the paper was published
+            
+        Returns:
+            str: The appropriate time period tag (T1-T5)
+        """
+        if publication_year < 1860:
+            return 'T1'  # 400 BCE to 1859
+        elif 1860 <= publication_year <= 1949:
+            return 'T2'  # 1860 to 1949
+        elif 1950 <= publication_year <= 1989:
+            return 'T3'  # 1950 to 1989
+        elif 1990 <= publication_year <= 2010:
+            return 'T4'  # 1990 to 2010
+        else:
+            return 'T5'  # 2011 to Present
+    
+    def predict_tags_with_publication_date_restriction(self, paper_text: str, publication_year: int = None) -> Dict[str, List[str]]:
+        """
+        Predict matrix tags with timeline restricted to publication date only.
+        This is the main method that implements the professors' timeline restriction request.
+        
+        Args:
+            paper_text (str): The text content of the paper
+            publication_year (int): The publication year (required for timeline restriction)
+            
+        Returns:
+            Dict[str, List[str]]: Predicted tags with timeline based on publication date
+        """
+        if publication_year is None:
+            print("⚠️ Warning: No publication year provided. Timeline tags may be inaccurate.")
+            # Fall back to content-based prediction
+            return self.predict_tags_simple(paper_text)
+        
+        print(f"📅 Using publication date restriction: {publication_year}")
+        
+        # Get content-based predictions for all categories EXCEPT time
+        content_predictions = self.predict_tags_simple(paper_text)
+        
+        # Override time prediction with publication date only
+        time_tag = self.predict_time_period_from_publication_date(publication_year)
+        content_predictions['time'] = [time_tag]
+        
+        print(f"🎯 Timeline tag restricted to publication date: {time_tag} ({publication_year})")
+        print(f"📝 Content-based tags: {content_predictions}")
+        
+        return content_predictions
+
 def main():
     """Main function to demonstrate the matrix tagger."""
     tagger = BibTeXMatrixTagger()

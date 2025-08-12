@@ -58,6 +58,7 @@ def tag_paper():
         paper_text = data['text']
         title = data.get('title', '')
         abstract = data.get('abstract', '')
+        publication_year = data.get('publication_year')  # New field for timeline restriction
         
         # Combine title and abstract if provided separately
         if title and abstract:
@@ -65,13 +66,25 @@ def tag_paper():
         else:
             full_text = paper_text
         
-        # Get predictions
-        predictions = tagger.predict_tags_simple(full_text)
+        # Use publication date restriction if year is provided
+        if publication_year:
+            try:
+                year = int(publication_year)
+                predictions = tagger.predict_tags_with_publication_date_restriction(full_text, year)
+                logger.info(f"Used publication date restriction for year {year}")
+            except ValueError:
+                logger.warning(f"Invalid publication year: {publication_year}, falling back to content-based prediction")
+                predictions = tagger.predict_tags_simple(full_text)
+        else:
+            # Fall back to content-based prediction
+            predictions = tagger.predict_tags_simple(full_text)
+            logger.info("No publication year provided, using content-based timeline prediction")
         
         return jsonify({
             'success': True,
             'predictions': predictions,
-            'input_text': full_text[:200] + '...' if len(full_text) > 200 else full_text
+            'input_text': full_text[:200] + '...' if len(full_text) > 200 else full_text,
+            'timeline_restriction_applied': publication_year is not None
         })
         
     except Exception as e:
@@ -98,29 +111,45 @@ def tag_papers_batch():
                 title = paper.get('title', '')
                 abstract = paper.get('abstract', '')
                 paper_id = paper.get('id', f'paper_{i}')
+                publication_year = paper.get('publication_year')  # New field for timeline restriction
                 
-                full_text = f"{title} {abstract}"
-                predictions = tagger.predict_tags_simple(full_text)
+                # Combine title and abstract
+                full_text = f"{title} {abstract}".strip()
+                
+                # Use publication date restriction if year is provided
+                if publication_year:
+                    try:
+                        year = int(publication_year)
+                        predictions = tagger.predict_tags_with_publication_date_restriction(full_text, year)
+                        timeline_restricted = True
+                    except ValueError:
+                        logger.warning(f"Invalid publication year for paper {paper_id}: {publication_year}")
+                        predictions = tagger.predict_tags_simple(full_text)
+                        timeline_restricted = False
+                else:
+                    predictions = tagger.predict_tags_simple(full_text)
+                    timeline_restricted = False
                 
                 results.append({
                     'id': paper_id,
                     'title': title,
-                    'predictions': predictions
+                    'predictions': predictions,
+                    'timeline_restriction_applied': timeline_restricted
                 })
                 
             except Exception as e:
-                logger.error(f"Error tagging paper {i}: {str(e)}")
+                logger.error(f"Error tagging paper {paper_id}: {str(e)}")
                 results.append({
-                    'id': paper.get('id', f'paper_{i}'),
-                    'title': paper.get('title', ''),
-                    'error': str(e)
+                    'id': paper_id,
+                    'error': f'Tagging failed: {str(e)}',
+                    'timeline_restriction_applied': False
                 })
         
         return jsonify({
             'success': True,
             'results': results,
             'total_papers': len(papers),
-            'successful_tags': len([r for r in results if 'predictions' in r])
+            'successful_tags': len([r for r in results if 'error' not in r])
         })
         
     except Exception as e:

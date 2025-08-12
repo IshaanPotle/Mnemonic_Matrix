@@ -238,7 +238,21 @@ class StreamlitApp:
             # Auto-tag papers with matrix tags using enhanced analysis
             for paper in papers:
                 paper_text = f"{paper.get('title', '')} {paper.get('abstract', '')}"
-                matrix_tags = self.matrix_tagger.analyze_paper_for_prediction(paper_text)
+                
+                # Use publication date restriction if year is available
+                year = paper.get('year')
+                if year and year != 'Unknown' and year != '':
+                    try:
+                        publication_year = int(year)
+                        matrix_tags = self.matrix_tagger.predict_tags_with_publication_date_restriction(
+                            paper_text, publication_year
+                        )
+                    except ValueError:
+                        # Fall back to content-based prediction if year is invalid
+                        matrix_tags = self.matrix_tagger.analyze_paper_for_prediction(paper_text)
+                else:
+                    # No year available, use content-based prediction
+                    matrix_tags = self.matrix_tagger.analyze_paper_for_prediction(paper_text)
                 
                 # Combine all matrix tags into a single list
                 all_tags = []
@@ -355,6 +369,30 @@ class StreamlitApp:
                     st.components.v1.html(viz_data['paper_timeline'], height=500)
                 else:
                     st.write(viz_data['paper_timeline'])
+            
+            # Display concept co-occurrence matrix
+            if 'concept_cooccurrence' in viz_data:
+                st.subheader("🧠 Concept Co-occurrence Matrix")
+                if viz_data['concept_cooccurrence'].startswith('<'):
+                    st.components.v1.html(viz_data['concept_cooccurrence'], height=700)
+                else:
+                    st.write(viz_data['concept_cooccurrence'])
+            
+            # Display matrix coverage visualization
+            if 'matrix_coverage' in viz_data:
+                st.subheader("📊 Matrix Coverage Analysis")
+                if viz_data['matrix_coverage'].startswith('<'):
+                    st.components.v1.html(viz_data['matrix_coverage'], height=700)
+                else:
+                    st.write(viz_data['matrix_coverage'])
+            
+            # Display dynamic filtering dashboard
+            if 'dynamic_filtering' in viz_data:
+                st.subheader("🎛️ Dynamic Filtering Dashboard")
+                if viz_data['dynamic_filtering'].startswith('<'):
+                    st.components.v1.html(viz_data['dynamic_filtering'], height=400)
+                else:
+                    st.write(viz_data['dynamic_filtering'])
     
     def display_analysis_tools(self, papers: List[Dict]):
         """Display analysis tools and summary statistics."""
@@ -654,7 +692,25 @@ def main():
                 for paper in st.session_state.papers:
                     if not paper.get('tags'):
                         paper_text = f"{paper.get('title', '')} {paper.get('abstract', '')}"
-                        matrix_tags = app.matrix_tagger.analyze_paper_for_prediction(paper_text)
+                        
+                        # Use publication date restriction if year is available
+                        year = paper.get('year')
+                        if year and year != 'Unknown' and year != '':
+                            try:
+                                publication_year = int(year)
+                                matrix_tags = app.matrix_tagger.predict_tags_with_publication_date_restriction(
+                                    paper_text, publication_year
+                                )
+                                st.info(f"📅 Applied publication date restriction for {publication_year}")
+                            except ValueError:
+                                # Fall back to content-based prediction if year is invalid
+                                matrix_tags = app.matrix_tagger.analyze_paper_for_prediction(paper_text)
+                                st.warning(f"⚠️ Invalid year '{year}', using content-based prediction")
+                        else:
+                            # No year available, use content-based prediction
+                            matrix_tags = app.matrix_tagger.analyze_paper_for_prediction(paper_text)
+                            st.info("ℹ️ No publication year provided, using content-based prediction")
+                        
                         all_tags = []
                         for category, tags in matrix_tags.items():
                             all_tags.extend(tags)
