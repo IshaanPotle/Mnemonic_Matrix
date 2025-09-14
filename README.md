@@ -6,13 +6,25 @@ An open-source machine learning system for automatically tagging academic papers
 
 The Mnemonic Matrix Tagger is a sophisticated ML system that automatically categorizes academic papers into four matrix dimensions:
 
-- **Time Periods** (T1-T5): Historical time periods from 400 BCE to present
+- **Time Periods** (T1-T5): Based on **publication date only** (not content discussed)
 - **Disciplines** (DSOC, DHIS, etc.): Academic disciplines and fields
 - **Memory Carriers** (MCSO, MCLI, etc.): Media and forms of memory transmission
 - **Concept Tags** (CTCollectiveMemory, etc.): Memory-related concepts and theories
 
+## 🔑 **Key Feature: Timeline Restriction**
+
+✅ **Timeline tags are restricted to publication date only**
+- T1: 400 BCE to 1859 (Ancient to Early Modern)
+- T2: 1860 to 1949 (Modern Period)  
+- T3: 1950 to 1989 (Post-War Period)
+- T4: 1990 to 2010 (Contemporary Period)
+- T5: 2011 to Present (Digital Age)
+
+**This addresses the specific requirement that timeline tags should reflect when papers were published, not the historical periods they discuss.**
+
 ## 🚀 Features
 
+- **Timeline Restriction**: Time tags based on publication date only (not content)
 - **Multi-label Classification**: Predicts multiple tags across all four categories
 - **BibTeX Integration**: Seamlessly works with BibTeX bibliography files
 - **Few-shot Learning**: Trains effectively with minimal labeled data
