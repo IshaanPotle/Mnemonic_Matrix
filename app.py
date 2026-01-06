@@ -389,10 +389,28 @@ class StreamlitApp:
             # Display dynamic filtering dashboard
             if 'dynamic_filtering' in viz_data:
                 st.subheader("🎛️ Dynamic Filtering Dashboard")
-                if viz_data['dynamic_filtering'].startswith('<'):
-                    st.components.v1.html(viz_data['dynamic_filtering'], height=400)
+                # Always use html component for dynamic filtering dashboard
+                try:
+                    st.components.v1.html(viz_data['dynamic_filtering'], height=600, scrolling=True)
+                except Exception as e:
+                    st.error(f"Error rendering filtering dashboard: {e}")
+                    st.code(viz_data['dynamic_filtering'][:500], language='html')
+            
+            # Display citation network
+            if 'citation_network' in viz_data:
+                st.subheader("📚 Citation Network Map")
+                if viz_data['citation_network'].startswith('<'):
+                    st.components.v1.html(viz_data['citation_network'], height=800)
                 else:
-                    st.write(viz_data['dynamic_filtering'])
+                    st.write(viz_data['citation_network'])
+            
+            # Display tag evolution over time
+            if 'tag_evolution' in viz_data:
+                st.subheader("📈 Tag Evolution Over Time")
+                if viz_data['tag_evolution'].startswith('<'):
+                    st.components.v1.html(viz_data['tag_evolution'], height=1200)
+                else:
+                    st.write(viz_data['tag_evolution'])
     
     def display_analysis_tools(self, papers: List[Dict]):
         """Display analysis tools and summary statistics."""
@@ -723,11 +741,13 @@ def main():
                 st.rerun()
         
         # Tabs for different views
-        tab1, tab2, tab3, tab4, tab5 = st.tabs([
+        tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
             "📊 Visualizations", 
             "📋 Papers List", 
             "🏷️ Tag Analysis", 
             "📈 Timeline",
+            "📚 Citation Network",
+            "📈 Tag Evolution",
             "💾 Export"
         ])
         
@@ -814,6 +834,38 @@ def main():
                     st.write(f"**{year}:** {count} papers")
         
         with tab5:
+            st.subheader("📚 Citation Network Map")
+            st.markdown("**Visualize relationships between papers based on shared tags, authors, journals, and publication dates.**")
+            
+            # Create visualizations
+            viz = Visualizer()
+            viz_data = viz.create_visualizations(st.session_state.papers)
+            
+            if 'citation_network' in viz_data:
+                if viz_data['citation_network'].startswith('<'):
+                    st.components.v1.html(viz_data['citation_network'], height=800)
+                else:
+                    st.write(viz_data['citation_network'])
+            else:
+                st.info("📝 Citation network will be generated once you have papers loaded.")
+        
+        with tab6:
+            st.subheader("📈 Tag Evolution Over Time")
+            st.markdown("**Track how memory studies concepts and categories evolve across different publication periods.**")
+            
+            # Create visualizations
+            viz = Visualizer()
+            viz_data = viz.create_visualizations(st.session_state.papers)
+            
+            if 'tag_evolution' in viz_data:
+                if viz_data['tag_evolution'].startswith('<'):
+                    st.components.v1.html(viz_data['tag_evolution'], height=1200)
+                else:
+                    st.write(viz_data['tag_evolution'])
+            else:
+                st.info("📝 Tag evolution will be generated once you have papers loaded.")
+        
+        with tab7:
             st.subheader("💾 Export Options")
             
             col1, col2 = st.columns(2)

@@ -4,6 +4,8 @@ Visualizer - Creates HTML visualizations for tagged papers
 """
 
 import json
+import html
+import base64
 from typing import List, Dict
 from pathlib import Path
 from collections import Counter
@@ -70,6 +72,20 @@ class Visualizer:
             visualizations['dynamic_filtering'] = filtering_html
         except Exception as e:
             visualizations['dynamic_filtering'] = f"<p>Error creating filtering dashboard: {str(e)}</p>"
+        
+        # Create citation network mapping
+        try:
+            citation_html = self._create_citation_network(papers)
+            visualizations['citation_network'] = citation_html
+        except Exception as e:
+            visualizations['citation_network'] = f"<p>Error creating citation network: {str(e)}</p>"
+        
+        # Create tag evolution over time
+        try:
+            evolution_html = self._create_tag_evolution_over_time(papers)
+            visualizations['tag_evolution'] = evolution_html
+        except Exception as e:
+            visualizations['tag_evolution'] = f"<p>Error creating tag evolution: {str(e)}</p>"
         
         return visualizations
     
@@ -1868,30 +1884,50 @@ class Visualizer:
         </div>
         
         <script>
-        // Store papers data for filtering
-        const papersData = {json.dumps([{
-            'id': paper.get('id', f'paper_{i}'),
-            'title': paper.get('title', 'Unknown'),
-            'authors': paper.get('authors', []),
-            'year': paper.get('year', 'Unknown'),
-            'tags': paper.get('tags', []),
-            'abstract': paper.get('abstract', '')
-        } for i, paper in enumerate(papers)])};
-        
+        // Store papers data for filtering (using base64 to avoid HTML parsing issues)
+        const papersDataEncoded = '{base64.b64encode(json.dumps([{
+            "id": paper.get("id", f"paper_{i}"),
+            "title": paper.get("title", "Unknown"),
+            "authors": paper.get("authors", []),
+            "year": paper.get("year", "Unknown"),
+            "tags": paper.get("tags", []),
+            "abstract": paper.get("abstract", "")
+        } for i, paper in enumerate(papers)], ensure_ascii=False, default=str).encode("utf-8")).decode("utf-8")}';
+        const papersData = JSON.parse(atob(papersDataEncoded));
         let filteredPapers = [...papersData];
         
-        // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', function() {{
-            updateFilterResults();
-            
-            // Event listeners
-            document.getElementById('applyFilters').addEventListener('click', applyFilters);
-            document.getElementById('clearFilters').addEventListener('click', clearFilters);
-            document.getElementById('exportFiltered').addEventListener('click', exportFilteredData);
-            document.getElementById('frequencyFilter').addEventListener('input', function() {{
-                document.getElementById('frequencyValue').textContent = this.value;
-            }});
-        }});
+        // Initialize dashboard - use immediate execution or wait for DOM
+        function initDashboard() {{
+            try {{
+                updateFilterResults();
+                
+                // Event listeners
+                const applyBtn = document.getElementById('applyFilters');
+                const clearBtn = document.getElementById('clearFilters');
+                const exportBtn = document.getElementById('exportFiltered');
+                const freqSlider = document.getElementById('frequencyFilter');
+                
+                if (applyBtn) applyBtn.addEventListener('click', applyFilters);
+                if (clearBtn) clearBtn.addEventListener('click', clearFilters);
+                if (exportBtn) exportBtn.addEventListener('click', exportFilteredData);
+                if (freqSlider) {{
+                    freqSlider.addEventListener('input', function() {{
+                        const valEl = document.getElementById('frequencyValue');
+                        if (valEl) valEl.textContent = this.value;
+                    }});
+                }}
+            }} catch (error) {{
+                console.error('Error initializing dashboard:', error);
+            }}
+        }}
+        
+        // Try immediate execution, fallback to DOMContentLoaded
+        if (document.readyState === 'loading') {{
+            document.addEventListener('DOMContentLoaded', initDashboard);
+        }} else {{
+            // DOM already loaded
+            setTimeout(initDashboard, 100);
+        }}
         
         function applyFilters() {{
             const categoryFilter = document.getElementById('categoryFilter').value;
@@ -1988,3 +2024,523 @@ class Visualizer:
         """
         
         return dashboard_html
+    
+    def _create_citation_network(self, papers: List[Dict]) -> str:
+        """Create a citation network visualization mapping relationships between papers."""
+        if not papers:
+            return "<p>No papers provided for citation network.</p>"
+        
+        # Extract citation relationships
+        # For now, we'll create relationships based on:
+        # 1. Shared tags (papers with similar tags are connected)
+        # 2. Author overlap (papers by same authors)
+        # 3. Year proximity (papers published close in time)
+        # 4. Journal similarity (papers in same journal)
+        
+        nodes = []
+        edges = []
+        node_positions = {}
+        
+        # Create nodes for each paper
+        for i, paper in enumerate(papers):
+            paper_id = paper.get('id', f'paper_{i}')
+            title = paper.get('title', 'Unknown Title')
+            authors = ', '.join(paper.get('authors', [])[:2])  # First 2 authors
+            year = paper.get('year', 'Unknown')
+            journal = paper.get('journal', 'Unknown')
+            tags = paper.get('tags', [])
+            
+            nodes.append({
+                'id': paper_id,
+                'title': title[:50] + '...' if len(title) > 50 else title,
+                'full_title': title,
+                'authors': authors,
+                'year': year,
+                'journal': journal,
+                'tags': tags,
+                'tag_count': len(tags)
+            })
+        
+        # Create edges based on relationships
+        for i, paper1 in enumerate(papers):
+            paper1_id = paper1.get('id', f'paper_{i}')
+            paper1_tags = set(paper1.get('tags', []))
+            paper1_authors = set(paper1.get('authors', []))
+            paper1_year = paper1.get('year', 'Unknown')
+            paper1_journal = paper1.get('journal', 'Unknown')
+            
+            for j, paper2 in enumerate(papers[i+1:], i+1):
+                paper2_id = paper2.get('id', f'paper_{j}')
+                paper2_tags = set(paper2.get('tags', []))
+                paper2_authors = set(paper2.get('authors', []))
+                paper2_year = paper2.get('year', 'Unknown')
+                paper2_journal = paper2.get('journal', 'Unknown')
+                
+                # Calculate relationship strength
+                relationship_strength = 0
+                relationship_type = []
+                
+                # Shared tags (strongest connection)
+                shared_tags = paper1_tags.intersection(paper2_tags)
+                if shared_tags:
+                    tag_similarity = len(shared_tags) / max(len(paper1_tags), len(paper2_tags), 1)
+                    relationship_strength += tag_similarity * 3
+                    relationship_type.append(f"{len(shared_tags)} shared tags")
+                
+                # Author overlap
+                shared_authors = paper1_authors.intersection(paper2_authors)
+                if shared_authors:
+                    relationship_strength += len(shared_authors) * 2
+                    relationship_type.append(f"{len(shared_authors)} shared authors")
+                
+                # Same journal
+                if paper1_journal != 'Unknown' and paper1_journal == paper2_journal:
+                    relationship_strength += 1
+                    relationship_type.append("same journal")
+                
+                # Year proximity (within 5 years)
+                try:
+                    year1 = int(paper1_year) if paper1_year != 'Unknown' else None
+                    year2 = int(paper2_year) if paper2_year != 'Unknown' else None
+                    if year1 and year2:
+                        year_diff = abs(year1 - year2)
+                        if year_diff <= 5:
+                            relationship_strength += 0.5
+                            relationship_type.append("close publication date")
+                except (ValueError, TypeError):
+                    pass
+                
+                # Only create edge if there's a meaningful relationship
+                if relationship_strength > 0.5:
+                    edges.append({
+                        'source': paper1_id,
+                        'target': paper2_id,
+                        'weight': relationship_strength,
+                        'type': ', '.join(relationship_type)
+                    })
+        
+        if not nodes:
+            return "<p>No papers to visualize in citation network.</p>"
+        
+        # Create node ID to index mapping
+        node_id_to_index = {node['id']: i for i, node in enumerate(nodes)}
+        
+        # Create force-directed layout for nodes
+        n_nodes = len(nodes)
+        if n_nodes > 1:
+            # Create adjacency matrix
+            adjacency_matrix = np.zeros((n_nodes, n_nodes))
+            
+            for edge in edges:
+                source_idx = node_id_to_index.get(edge['source'])
+                target_idx = node_id_to_index.get(edge['target'])
+                if source_idx is not None and target_idx is not None:
+                    adjacency_matrix[source_idx][target_idx] = edge['weight']
+                    adjacency_matrix[target_idx][source_idx] = edge['weight']
+            
+            node_positions = self._force_directed_layout(adjacency_matrix, n_iterations=200)
+        else:
+            node_positions = [[0, 0]]
+        
+        # Create Plotly network graph
+        fig = go.Figure()
+        
+        # Add edges
+        if edges:
+            edge_x = []
+            edge_y = []
+            edge_hover_texts = []
+            edge_widths = []
+            
+            max_weight = max(e['weight'] for e in edges) if edges else 1
+            
+            for edge in edges:
+                source_idx = node_id_to_index.get(edge['source'])
+                target_idx = node_id_to_index.get(edge['target'])
+                
+                if source_idx is not None and target_idx is not None:
+                    x0, y0 = node_positions[source_idx]
+                    x1, y1 = node_positions[target_idx]
+                    
+                    edge_x.extend([x0, x1, None])
+                    edge_y.extend([y0, y1, None])
+                    
+                    # Edge width based on weight
+                    edge_width = 1 + (edge['weight'] / max_weight) * 3
+                    edge_widths.extend([edge_width, edge_width, None])
+                    
+                    edge_hover_texts.extend([
+                        f"<b>Connection</b><br>Type: {edge['type']}<br>Strength: {edge['weight']:.2f}",
+                        "",
+                        ""
+                    ])
+            
+            fig.add_trace(go.Scatter(
+                x=edge_x, y=edge_y,
+                line=dict(width=1, color='rgba(136, 136, 136, 0.4)'),
+                hoverinfo='text',
+                hovertext=edge_hover_texts,
+                mode='lines',
+                showlegend=False
+            ))
+        
+        # Add nodes
+        node_x = [pos[0] for pos in node_positions]
+        node_y = [pos[1] for pos in node_positions]
+        node_texts = [node['title'] for node in nodes]
+        node_sizes = [10 + node['tag_count'] * 2 for node in nodes]
+        node_colors = []
+        
+        # Color nodes by year (if available)
+        for node in nodes:
+            year = node['year']
+            try:
+                year_int = int(year) if year != 'Unknown' else 2000
+                # Color gradient from blue (old) to red (new)
+                if year_int < 1990:
+                    node_colors.append('#1f77b4')  # Blue
+                elif year_int < 2000:
+                    node_colors.append('#2ca02c')  # Green
+                elif year_int < 2010:
+                    node_colors.append('#ff7f0e')  # Orange
+                else:
+                    node_colors.append('#d62728')  # Red
+            except (ValueError, TypeError):
+                node_colors.append('#7f7f7f')  # Gray
+        
+        hover_texts = []
+        for node in nodes:
+            hover_text = f"""
+            <b>{node['full_title']}</b><br>
+            Authors: {node['authors']}<br>
+            Year: {node['year']}<br>
+            Journal: {node['journal']}<br>
+            Tags: {', '.join(node['tags'][:5])}{'...' if len(node['tags']) > 5 else ''}<br>
+            <i>Click to see details</i>
+            """
+            hover_texts.append(hover_text)
+        
+        fig.add_trace(go.Scatter(
+            x=node_x, y=node_y,
+            mode='markers+text',
+            hoverinfo='text',
+            text=node_texts,
+            textposition="middle center",
+            textfont=dict(size=8, color='white'),
+            hovertext=hover_texts,
+            marker=dict(
+                size=node_sizes,
+                color=node_colors,
+                line=dict(width=2, color='white'),
+                opacity=0.8
+            ),
+            showlegend=False
+        ))
+        
+        fig.update_layout(
+            title=dict(
+                text=f'📚 Citation Network Map<br><sub>Nodes: {len(nodes)} papers | Connections: {len(edges)} relationships</sub>',
+                x=0.5,
+                xanchor='center',
+                font=dict(size=16, color='#E8E8E8')
+            ),
+            showlegend=False,
+            hovermode='closest',
+            margin=dict(b=20, l=5, r=5, t=80),
+            xaxis=dict(
+                showgrid=False,
+                zeroline=False,
+                showticklabels=False
+            ),
+            yaxis=dict(
+                showgrid=False,
+                zeroline=False,
+                showticklabels=False
+            ),
+            plot_bgcolor='#1A1A1A',
+            paper_bgcolor='#0F0F0F',
+            height=700
+        )
+        
+        # Add legend for year colors
+        legend_html = """
+        <div style="background-color: #1A1A1A; padding: 15px; border-radius: 8px; margin-top: 20px; color: #E8E8E8;">
+            <h4 style="color: #FF6B9D; margin-bottom: 15px;">📊 Network Interpretation</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div style="background-color: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px;">
+                    <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                        <div style="width: 15px; height: 15px; background-color: #1f77b4; border-radius: 3px; margin-right: 8px;"></div>
+                        <span>Before 1990</span>
+                    </div>
+                </div>
+                <div style="background-color: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px;">
+                    <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                        <div style="width: 15px; height: 15px; background-color: #2ca02c; border-radius: 3px; margin-right: 8px;"></div>
+                        <span>1990-1999</span>
+                    </div>
+                </div>
+                <div style="background-color: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px;">
+                    <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                        <div style="width: 15px; height: 15px; background-color: #ff7f0e; border-radius: 3px; margin-right: 8px;"></div>
+                        <span>2000-2009</span>
+                    </div>
+                </div>
+                <div style="background-color: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px;">
+                    <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                        <div style="width: 15px; height: 15px; background-color: #d62728; border-radius: 3px; margin-right: 8px;"></div>
+                        <span>2010+</span>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 15px; padding: 10px; background-color: rgba(255,255,255,0.05); border-radius: 5px;">
+                <span style="color: #4ECDC4; font-weight: bold;">💡 Connections are based on:</span>
+                <ul style="margin: 5px 0; padding-left: 20px;">
+                    <li>Shared tags (strongest connection)</li>
+                    <li>Author overlap</li>
+                    <li>Same journal</li>
+                    <li>Publication date proximity</li>
+                </ul>
+            </div>
+        </div>
+        """
+        
+        return fig.to_html(include_plotlyjs=True, full_html=False) + legend_html
+    
+    def _create_tag_evolution_over_time(self, papers: List[Dict]) -> str:
+        """Create a visualization showing how tags evolve and change over time."""
+        if not papers:
+            return "<p>No papers provided for tag evolution analysis.</p>"
+        
+        # Group papers by time period
+        time_periods = {
+            'T1': (400, 1859, '400 BCE - 1859'),
+            'T2': (1860, 1949, '1860 - 1949'),
+            'T3': (1950, 1989, '1950 - 1989'),
+            'T4': (1990, 2010, '1990 - 2010'),
+            'T5': (2011, 2025, '2011 - Present')
+        }
+        
+        # Collect tag frequencies by time period
+        tag_evolution = {}  # {tag: {period: count}}
+        papers_by_period = {period: [] for period in time_periods.keys()}
+        
+        for paper in papers:
+            year = paper.get('year', 'Unknown')
+            tags = paper.get('tags', [])
+            
+            # Determine time period
+            period = None
+            try:
+                if year != 'Unknown':
+                    year_int = int(year)
+                    for period_key, (start, end, label) in time_periods.items():
+                        if start <= year_int <= end:
+                            period = period_key
+                            break
+            except (ValueError, TypeError):
+                pass
+            
+            if period:
+                papers_by_period[period].append(paper)
+                
+                # Track tag frequencies
+                for tag in tags:
+                    if tag not in tag_evolution:
+                        tag_evolution[tag] = {p: 0 for p in time_periods.keys()}
+                    tag_evolution[tag][period] = tag_evolution[tag].get(period, 0) + 1
+        
+        # Get top tags for visualization (most frequently used overall)
+        all_tag_counts = {}
+        for tag, period_counts in tag_evolution.items():
+            all_tag_counts[tag] = sum(period_counts.values())
+        
+        top_tags = sorted(all_tag_counts.items(), key=lambda x: x[1], reverse=True)[:15]
+        top_tag_names = [tag for tag, count in top_tags]
+        
+        if not top_tag_names:
+            return "<p>No tags found for evolution analysis.</p>"
+        
+        # Prepare data for line chart
+        periods = ['T1', 'T2', 'T3', 'T4', 'T5']
+        period_labels = [time_periods[p][2] for p in periods]
+        
+        fig = go.Figure()
+        
+        # Color mapping for tag categories
+        def get_tag_color(tag):
+            if tag.startswith('T'):
+                return '#FF6B9D'
+            elif tag.startswith('D'):
+                return '#4ECDC4'
+            elif tag.startswith('MC'):
+                return '#45B7D1'
+            elif tag.startswith('CT'):
+                return '#F7DC6F'
+            return '#95a5a6'
+        
+        # Add line for each top tag
+        for tag in top_tag_names:
+            tag_counts = [tag_evolution[tag].get(period, 0) for period in periods]
+            
+            fig.add_trace(go.Scatter(
+                x=period_labels,
+                y=tag_counts,
+                mode='lines+markers',
+                name=tag,
+                line=dict(width=2, color=get_tag_color(tag)),
+                marker=dict(size=8),
+                hovertemplate=f'<b>{tag}</b><br>Period: %{{x}}<br>Frequency: %{{y}}<extra></extra>'
+            ))
+        
+        fig.update_layout(
+            title=dict(
+                text='📈 Tag Evolution Over Time<br><sub>How memory studies concepts and categories change across publication periods</sub>',
+                x=0.5,
+                xanchor='center',
+                font=dict(size=18, color='#E8E8E8')
+            ),
+            xaxis=dict(
+                title=dict(text='Time Period', font=dict(color='#E8E8E8')),
+                tickfont=dict(color='#E8E8E8'),
+                gridcolor='rgba(255,255,255,0.1)',
+                zerolinecolor='rgba(255,255,255,0.2)',
+                tickcolor='#E8E8E8'
+            ),
+            yaxis=dict(
+                title=dict(text='Number of Papers', font=dict(color='#E8E8E8')),
+                tickfont=dict(color='#E8E8E8'),
+                gridcolor='rgba(255,255,255,0.1)',
+                zerolinecolor='rgba(255,255,255,0.2)',
+                tickcolor='#E8E8E8'
+            ),
+            plot_bgcolor='#1A1A1A',
+            paper_bgcolor='#0F0F0F',
+            margin=dict(l=50, r=50, t=100, b=100),
+            height=600,
+            legend=dict(
+                yanchor="top",
+                y=0.99,
+                xanchor="left",
+                x=0.01,
+                bgcolor='rgba(30,30,30,0.95)',
+                bordercolor='rgba(255,255,255,0.2)',
+                borderwidth=1,
+                font=dict(color='#E8E8E8', size=10),
+                itemsizing='constant'
+            ),
+            hovermode='x unified'
+        )
+        
+        # Create stacked area chart for tag categories
+        category_evolution = {
+            'Time Periods': {p: 0 for p in periods},
+            'Disciplines': {p: 0 for p in periods},
+            'Memory Carriers': {p: 0 for p in periods},
+            'Concept Tags': {p: 0 for p in periods}
+        }
+        
+        for tag, period_counts in tag_evolution.items():
+            category = None
+            if tag.startswith('T'):
+                category = 'Time Periods'
+            elif tag.startswith('D'):
+                category = 'Disciplines'
+            elif tag.startswith('MC'):
+                category = 'Memory Carriers'
+            elif tag.startswith('CT'):
+                category = 'Concept Tags'
+            
+            if category:
+                for period in periods:
+                    category_evolution[category][period] += period_counts.get(period, 0)
+        
+        fig2 = go.Figure()
+        
+        category_colors = {
+            'Time Periods': '#FF6B9D',
+            'Disciplines': '#4ECDC4',
+            'Memory Carriers': '#45B7D1',
+            'Concept Tags': '#F7DC6F'
+        }
+        
+        for category, period_counts in category_evolution.items():
+            counts = [period_counts[p] for p in periods]
+            fig2.add_trace(go.Scatter(
+                x=period_labels,
+                y=counts,
+                mode='lines+markers',
+                name=category,
+                stackgroup='one',
+                fill='tonexty' if category != 'Time Periods' else 'tozeroy',
+                line=dict(width=2, color=category_colors[category]),
+                marker=dict(size=8),
+                hovertemplate=f'<b>{category}</b><br>Period: %{{x}}<br>Total: %{{y}}<extra></extra>'
+            ))
+        
+        fig2.update_layout(
+            title=dict(
+                text='📊 Tag Category Evolution Over Time<br><sub>Stacked view of tag categories across publication periods</sub>',
+                x=0.5,
+                xanchor='center',
+                font=dict(size=18, color='#E8E8E8')
+            ),
+            xaxis=dict(
+                title=dict(text='Time Period', font=dict(color='#E8E8E8')),
+                tickfont=dict(color='#E8E8E8'),
+                gridcolor='rgba(255,255,255,0.1)',
+                zerolinecolor='rgba(255,255,255,0.2)',
+                tickcolor='#E8E8E8'
+            ),
+            yaxis=dict(
+                title=dict(text='Total Tag Frequency', font=dict(color='#E8E8E8')),
+                tickfont=dict(color='#E8E8E8'),
+                gridcolor='rgba(255,255,255,0.1)',
+                zerolinecolor='rgba(255,255,255,0.2)',
+                tickcolor='#E8E8E8'
+            ),
+            plot_bgcolor='#1A1A1A',
+            paper_bgcolor='#0F0F0F',
+            margin=dict(l=50, r=50, t=100, b=100),
+            height=500,
+            legend=dict(
+                yanchor="top",
+                y=0.99,
+                xanchor="left",
+                x=0.01,
+                bgcolor='rgba(30,30,30,0.95)',
+                bordercolor='rgba(255,255,255,0.2)',
+                borderwidth=1,
+                font=dict(color='#E8E8E8', size=12)
+            ),
+            hovermode='x unified'
+        )
+        
+        # Create summary statistics
+        summary_html = f"""
+        <div style="background-color: #1A1A1A; padding: 20px; border-radius: 8px; margin-top: 20px; color: #E8E8E8;">
+            <h4 style="color: #FF6B9D; margin-bottom: 20px;">📊 Evolution Summary Statistics</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+        """
+        
+        for period in periods:
+            period_label = time_periods[period][2]
+            paper_count = len(papers_by_period[period])
+            unique_tags = set()
+            for paper in papers_by_period[period]:
+                unique_tags.update(paper.get('tags', []))
+            
+            summary_html += f"""
+                <div style="background-color: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; border-left: 4px solid {get_tag_color(period)};">
+                    <h5 style="color: {get_tag_color(period)}; margin-bottom: 10px;">{period_label}</h5>
+                    <div style="font-size: 24px; color: #E8E8E8; font-weight: bold;">{paper_count}</div>
+                    <div style="font-size: 12px; color: #B0B0B0;">Papers</div>
+                    <div style="font-size: 14px; color: #E8E8E8; margin-top: 5px;">{len(unique_tags)} unique tags</div>
+                </div>
+            """
+        
+        summary_html += """
+            </div>
+        </div>
+        """
+        
+        return fig.to_html(include_plotlyjs=True, full_html=False) + fig2.to_html(include_plotlyjs='cdn', full_html=False) + summary_html
